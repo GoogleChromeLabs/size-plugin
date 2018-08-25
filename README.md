@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/3bWBrJm.png" width="602" height="242" alt="size-plugin">
+  <img src="https://i.imgur.com/3bWBrJm.png" width="602" alt="size-plugin">
 </p>
 
 
