@@ -88,7 +88,7 @@ export default class SizePlugin {
 
 	async outputSizes (assets) {
 		// map of filenames to their previous size
-    // Fix #7 - fast-async doesn't allow non-promise values.
+		// Fix #7 - fast-async doesn't allow non-promise values.
 		const sizesBefore = await Promise.resolve(this.sizes);
 
 		const isMatched = minimatch.filter(this.pattern);
