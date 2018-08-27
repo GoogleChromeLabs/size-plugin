@@ -41,10 +41,10 @@ export default class SizePlugin {
 		let count = 0;
 		function replacer() {
 			let out = '';
-			for (let i=1; i<arguments.length-2; i++) {
+			for (let i = 1; i < arguments.length - 2; i++) {
 				// eslint-disable-next-line prefer-spread,prefer-rest-params
 				let value = arguments[i];
-				if (replace[i-1]) value = value.replace(/./g, '*');
+				if (replace[i - 1]) value = value.replace(/./g, '*');
 				out += value;
 			}
 			return out;
@@ -52,7 +52,7 @@ export default class SizePlugin {
 		const reg = template.replace(/(^|.+?)(?:\[([a-z]+)(?::(\d))?\]|$)/g, (s, before, type, size) => {
 			let out = '';
 			if (before) {
-				out += '(' + escapeRegExp(before) + ')';
+				out += `(${escapeRegExp(before)})`;
 				replace[count++] = false;
 			}
 			if (type==='hash' || type==='contenthash') {
@@ -118,7 +118,7 @@ export default class SizePlugin {
 				else if (delta < -10) {
 					deltaText = chalk.green(deltaText);
 				}
-				sizeText += ' (' + deltaText + ')';
+				sizeText += ` (${deltaText})`;
 			}
 			output += msg + sizeText + '\n';
 		}
