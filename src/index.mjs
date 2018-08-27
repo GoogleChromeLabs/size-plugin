@@ -15,7 +15,7 @@
  */
 
 import path from 'path';
-import { promisify } from 'util';
+import promisify from 'util.promisify';
 import globPromise from 'glob';
 import minimatch from 'minimatch';
 import gzipSize from 'gzip-size';

@@ -68,7 +68,8 @@
     "glob": "^7.1.2",
     "gzip-size": "^5.0.0",
     "minimatch": "^3.0.4",
-    "pretty-bytes": "^5.1.0"
+    "pretty-bytes": "^5.1.0",
+    "util.promisify": "^1.0.0"
   },
   "peerDependencies": {
     "webpack": ">= 4"
