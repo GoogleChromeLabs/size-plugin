@@ -83,7 +83,7 @@ export default class SizePlugin {
     this.output = compiler.options.output;
     this.sizes = this.getSizes(outputPath);
     // for webpack version > 4
-    if (compiler.hooks) {
+    if (compiler.hooks && compiler.hooks.afterEmit) {
       return compiler.hooks.afterEmit.tapPromise(NAME, compilation =>
         this.outputSizes(compilation.assets).catch(console.error)
       );
@@ -91,8 +91,8 @@ export default class SizePlugin {
     // for webpack version < 3
     return compiler.plugin('after-emit', (compilation, callback) => {
       this.outputSizes(compilation.assets)
-        .then(callback)
-        .catch(callback);
+        .catch(console.error)
+        .then(callback);
     });
   }
 
