@@ -15,6 +15,7 @@
  */
 
 import path from 'path';
+import fs from 'fs';
 import promisify from 'util.promisify';
 import globPromise from 'glob';
 import minimatch from 'minimatch';
@@ -32,7 +33,10 @@ export default class SizePlugin {
 	constructor (options) {
 		this.options = options || {};
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
-		this.exclude = this.options.exclude;
+    this.exclude = this.options.exclude;
+    this.history = this.options.history;
+    this.historyPath = path.resolve(this.options.historyPath || process.cwd(), 'build-sizes.json');
+    this.buildTimestamp = Math.floor(Date.now());
 	}
 
 	reverseTemplate(filename, template) {
@@ -86,6 +90,24 @@ export default class SizePlugin {
 		compiler.hooks.afterEmit.tapPromise(NAME, compilation => this.outputSizes(compilation.assets).catch(console.error));
 	}
 
+  async storeToFile (buildResult) {
+    try {
+      fs.readFile(`${this.historyPath}`, (err, data) => {
+        let json = {};
+        if (data) {
+          json = JSON.parse(data);
+        }
+        json[this.buildTimestamp] = buildResult[this.buildTimestamp];
+        fs.writeFile(`${this.historyPath}`, JSON.stringify(json), (e) => {
+          if (e) throw e;
+          console.log(chalk.green(`file got stored at: ${this.historyPath}`));
+        });
+      })
+    } catch (e) {
+      throw e;
+    }
+  }
+
 	async outputSizes (assets) {
 		// map of filenames to their previous size
 		// Fix #7 - fast-async doesn't allow non-promise values.
@@ -95,7 +117,7 @@ export default class SizePlugin {
 		const isExcluded = this.exclude ? minimatch.filter(this.exclude) : () => false;
 		const assetNames = Object.keys(assets).filter(file => isMatched(file) && !isExcluded(file));
 		const sizes = await Promise.all(assetNames.map(name => gzipSize(assets[name].source())));
-
+    
 		// map of de-hashed filenames to their final size
 		this.sizes = toMap(assetNames.map(filename => this.stripHash(filename)), sizes);
 
@@ -103,12 +125,19 @@ export default class SizePlugin {
 		const files = Object.keys(sizesBefore).concat(Object.keys(this.sizes)).filter(dedupe);
 
 		const width = Math.max(...files.map(file => file.length));
-		let output = '';
+    let output = '';
+    
+    let jsonOutput = {};
+    jsonOutput[this.buildTimestamp] = {};
+
 		for (const name of files) {
 			const size = this.sizes[name] || 0;
-			const delta = size - (sizesBefore[name] || 0);
-			const msg = new Array(width - name.length + 2).join(' ') + name + ' ⏤  ';
-			const color = size > 100 * 1024 ? 'red' : size > 40 * 1024 ? 'yellow' : size > 20 * 1024 ? 'cyan' : 'green';
+      const delta = size - (sizesBefore[name] || 0);
+			const msg = `${new Array(width - name.length + 2).join(' ')}${name} ⏤  `;
+      const color = size > 100 * 1024 ? 'red' : size > 40 * 1024 ? 'yellow' : size > 20 * 1024 ? 'cyan' : 'green';
+      
+      jsonOutput[this.buildTimestamp][name] = size;
+
 			let sizeText = chalk[color](prettyBytes(size));
 			if (delta) {
 				let deltaText = (delta > 0 ? '+' : '') + prettyBytes(delta);
@@ -124,6 +153,9 @@ export default class SizePlugin {
 			output += msg + sizeText + '\n';
 		}
 		if (output) {
+      if (this.history){
+        this.storeToFile(jsonOutput);
+      }
 			console.log(output);
 		}
 	}
