@@ -33,10 +33,10 @@ export default class SizePlugin {
 	constructor (options) {
 		this.options = options || {};
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
-    this.exclude = this.options.exclude;
-    this.history = this.options.history;
-    this.historyPath = path.resolve(this.options.historyPath || process.cwd(), 'build-sizes.json');
-    this.buildTimestamp = Math.floor(Date.now());
+		this.exclude = this.options.exclude;
+		this.history = this.options.history;
+		this.historyPath = path.resolve(this.options.historyPath || process.cwd(), 'build-sizes.json');
+		this.buildTimestamp = Math.floor(Date.now());
 	}
 
 	reverseTemplate(filename, template) {
@@ -77,8 +77,8 @@ export default class SizePlugin {
 	stripHash(filename) {
 		return (
 			this.reverseTemplate(filename, this.output.filename) ||
-      this.reverseTemplate(filename, this.output.chunkFilename) ||
-      filename
+			this.reverseTemplate(filename, this.output.chunkFilename) ||
+			filename
 		);
 	}
 
@@ -90,23 +90,39 @@ export default class SizePlugin {
 		compiler.hooks.afterEmit.tapPromise(NAME, compilation => this.outputSizes(compilation.assets).catch(console.error));
 	}
 
-  async storeToFile (buildResult) {
-    try {
-      fs.readFile(`${this.historyPath}`, (err, data) => {
-        let json = {};
-        if (data) {
-          json = JSON.parse(data);
-        }
-        json[this.buildTimestamp] = buildResult[this.buildTimestamp];
-        fs.writeFile(`${this.historyPath}`, JSON.stringify(json), (e) => {
-          if (e) throw e;
-          console.log(chalk.green(`file got stored at: ${this.historyPath}`));
-        });
-      })
-    } catch (e) {
-      throw e;
-    }
-  }
+	async writeFile (file, data) {
+		return new Promise((resolve, reject) => {
+			fs.writeFile(file, data, error => {
+				if (error) reject(error);
+				resolve();
+			});
+		});
+	}
+
+	async readFile (file) {
+		return new Promise((resolve, reject) => {
+			fs.readFile(file, (error, data) => {
+				if (error && error.code !== 'ENOENT') reject(error);
+				resolve(data);
+			});
+		});
+	}
+
+	async storeToFile (buildResult) {
+		try {
+			const fileContents = await this.readFile(this.historyPath);
+			let json = {};
+			if (fileContents) {
+				json = JSON.parse(fileContents);
+			}
+			json[this.buildTimestamp] = buildResult[this.buildTimestamp];
+			await this.writeFile(this.historyPath, JSON.stringify(json));
+			console.log(chalk.green(`file got stored at: ${this.historyPath}`));
+		}
+		catch (e) {
+			console.error(chalk.green(`Couldn't store history: ${e}`));
+		}
+	}
 
 	async outputSizes (assets) {
 		// map of filenames to their previous size
@@ -117,7 +133,7 @@ export default class SizePlugin {
 		const isExcluded = this.exclude ? minimatch.filter(this.exclude) : () => false;
 		const assetNames = Object.keys(assets).filter(file => isMatched(file) && !isExcluded(file));
 		const sizes = await Promise.all(assetNames.map(name => gzipSize(assets[name].source())));
-    
+		
 		// map of de-hashed filenames to their final size
 		this.sizes = toMap(assetNames.map(filename => this.stripHash(filename)), sizes);
 
@@ -125,18 +141,18 @@ export default class SizePlugin {
 		const files = Object.keys(sizesBefore).concat(Object.keys(this.sizes)).filter(dedupe);
 
 		const width = Math.max(...files.map(file => file.length));
-    let output = '';
-    
-    let jsonOutput = {};
-    jsonOutput[this.buildTimestamp] = {};
+		let output = '';
+		
+		let jsonOutput = {};
+		jsonOutput[this.buildTimestamp] = {};
 
 		for (const name of files) {
 			const size = this.sizes[name] || 0;
-      const delta = size - (sizesBefore[name] || 0);
+			const delta = size - (sizesBefore[name] || 0);
 			const msg = `${new Array(width - name.length + 2).join(' ')}${name} ⏤  `;
-      const color = size > 100 * 1024 ? 'red' : size > 40 * 1024 ? 'yellow' : size > 20 * 1024 ? 'cyan' : 'green';
-      
-      jsonOutput[this.buildTimestamp][name] = size;
+			const color = size > 100 * 1024 ? 'red' : size > 40 * 1024 ? 'yellow' : size > 20 * 1024 ? 'cyan' : 'green';
+			
+			jsonOutput[this.buildTimestamp][name] = size;
 
 			let sizeText = chalk[color](prettyBytes(size));
 			if (delta) {
@@ -153,9 +169,9 @@ export default class SizePlugin {
 			output += msg + sizeText + '\n';
 		}
 		if (output) {
-      if (this.history){
-        this.storeToFile(jsonOutput);
-      }
+			if (this.history){
+				this.storeToFile(jsonOutput);
+			}
 			console.log(output);
 		}
 	}

@@ -41,6 +41,26 @@ module.exports = {
 
 ---
 
+## Options
+
+### History
+This option will store a json file with the history of your build that you then can use to do bundle analysis over a period of time
+```js
+// webpack.config.js
+const SizePlugin = require('size-plugin');
+
+module.exports = {
+  plugins: [
+    new SizePlugin({
+      history: true,
+      historyPath: 'reports' // Relative to where webpack is ran
+    })
+  ]
+}
+```
+
+---
+
 ## License
 
 [Apache 2.0](LICENSE)
