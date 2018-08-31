@@ -2,6 +2,7 @@
   <h1 align="center">
     size-plugin
     <a href="https://www.npmjs.org/package/size-plugin"><img src="https://img.shields.io/npm/v/size-plugin.svg?style=flat" alt="npm"></a>
+        <a href="https://travis-ci.org/GoogleChromeLabs/size-plugin"><img src="https://travis-ci.org/GoogleChromeLabs/size-plugin.svg?branch=master" alt="travis"></a>
   </h1>
 </p>
 
