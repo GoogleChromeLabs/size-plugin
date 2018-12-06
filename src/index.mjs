@@ -78,19 +78,28 @@ export default class SizePlugin {
 		);
 	}
 
-	async apply (compiler) {
-		const outputPath = compiler.options.output.path;
-		this.output = compiler.options.output;
-		this.sizes = this.getSizes(outputPath);
-
-		compiler.hooks.afterEmit.tapPromise(NAME, compilation => this.outputSizes(compilation.assets).catch(console.error));
-	}
+  async apply(compiler) {
+    const outputPath = compiler.options.output.path;
+    this.output = compiler.options.output;
+    this.sizes = this.getSizes(outputPath);
+    // for webpack version > 4
+    if (compiler.hooks && compiler.hooks.afterEmit) {
+      return compiler.hooks.afterEmit.tapPromise(NAME, compilation =>
+        this.outputSizes(compilation.assets).catch(console.error)
+      );
+    }
+    // for webpack version < 3
+    return compiler.plugin('after-emit', (compilation, callback) => {
+      this.outputSizes(compilation.assets)
+        .catch(console.error)
+        .then(callback);
+    });
+  }
 
 	async outputSizes (assets) {
 		// map of filenames to their previous size
 		// Fix #7 - fast-async doesn't allow non-promise values.
 		const sizesBefore = await Promise.resolve(this.sizes);
-
 		const isMatched = minimatch.filter(this.pattern);
 		const isExcluded = this.exclude ? minimatch.filter(this.exclude) : () => false;
 		const assetNames = Object.keys(assets).filter(file => isMatched(file) && !isExcluded(file));
@@ -100,7 +109,7 @@ export default class SizePlugin {
 		this.sizes = toMap(assetNames.map(filename => this.stripHash(filename)), sizes);
 
 		// get a list of unique filenames
-		const files = Object.keys(sizesBefore).concat(Object.keys(this.sizes)).filter(dedupe);
+		const files = Object.keys(this.sizes).filter(dedupe);
 
 		const width = Math.max(...files.map(file => file.length));
 		let output = '';
@@ -132,7 +141,7 @@ export default class SizePlugin {
 		const files = await glob(this.pattern, { cwd, ignore: this.exclude });
 
 		const sizes = await Promise.all(files.map(
-			file => gzipSize.file(path.join(cwd, file))
+			file => gzipSize.file(path.join(cwd, file)).catch(() =>null)
 		));
 
 		return toMap(files.map(filename => this.stripHash(filename)), sizes);
