@@ -63,7 +63,7 @@ export default class SizePlugin {
 				out += `(${escapeRegExp(before)})`;
 				replace[count++] = false;
 			}
-			if (type==='hash' || type==='contenthash') {
+			if (type==='hash' || type==='contenthash' || type==='chunkhash') {
 				const len = Math.round(size) || hashLength;
 				out += `([0-9a-zA-Z]{${len}})`;
 				replace[count++] = true;
