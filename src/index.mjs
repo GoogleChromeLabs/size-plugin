@@ -78,23 +78,23 @@ export default class SizePlugin {
 		);
 	}
 
-  async apply(compiler) {
-    const outputPath = compiler.options.output.path;
-    this.output = compiler.options.output;
-    this.sizes = this.getSizes(outputPath);
-    // for webpack version > 4
-    if (compiler.hooks && compiler.hooks.afterEmit) {
-      return compiler.hooks.afterEmit.tapPromise(NAME, compilation =>
-        this.outputSizes(compilation.assets).catch(console.error)
-      );
-    }
-    // for webpack version < 3
-    return compiler.plugin('after-emit', (compilation, callback) => {
-      this.outputSizes(compilation.assets)
-        .catch(console.error)
-        .then(callback);
-    });
-  }
+	async apply(compiler) {
+		const outputPath = compiler.options.output.path;
+		this.output = compiler.options.output;
+		this.sizes = this.getSizes(outputPath);
+		// for webpack version > 4
+		if (compiler.hooks && compiler.hooks.afterEmit) {
+			return compiler.hooks.afterEmit.tapPromise(NAME, compilation =>
+				this.outputSizes(compilation.assets).catch(console.error)
+			);
+		}
+		// for webpack version < 3
+		return compiler.plugin('after-emit', (compilation, callback) => {
+			this.outputSizes(compilation.assets)
+				.catch(console.error)
+				.then(callback);
+		});
+	}
 
 	async outputSizes (assets) {
 		// map of filenames to their previous size
@@ -141,7 +141,7 @@ export default class SizePlugin {
 		const files = await glob(this.pattern, { cwd, ignore: this.exclude });
 
 		const sizes = await Promise.all(files.map(
-			file => gzipSize.file(path.join(cwd, file)).catch(() =>null)
+			file => gzipSize.file(path.join(cwd, file)).catch(() => null)
 		));
 
 		return toMap(files.map(filename => this.stripHash(filename)), sizes);
