@@ -73,6 +73,6 @@
     "util.promisify": "^1.0.0"
   },
   "peerDependencies": {
-    "webpack": ">= 3"
+    "webpack": "*"
   }
 }
