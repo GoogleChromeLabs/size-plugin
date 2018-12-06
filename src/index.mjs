@@ -36,6 +36,14 @@ export default class SizePlugin {
 	}
 
 	reverseTemplate(filename, template) {
+		// @todo - find a way to actually obtain values here.
+		if (typeof template === 'function') {
+			template = template({
+				chunk: {
+					name: 'main'
+				}
+			});
+		}
 		const hashLength = this.output.hashDigestLength;
 		const replace = [];
 		let count = 0;
