@@ -20,8 +20,8 @@ exports[`size-plugin should respect output.filename / output.chunkFilename 1`] =
 `;
 
 exports[`size-plugin should show size deltas for subsequent builds 1`] = `
-" 1.*****.chunk.js ⏤  [32m303 B[39m (+166 B)
+"        bundle.js ⏤  [1m[32m7.22 kB[39m[22m ([31m+6.16 kB[39m)
+ 1.*****.chunk.js ⏤  [32m303 B[39m (+166 B)
  2.*****.chunk.js ⏤  [32m102 B[39m
-        bundle.js ⏤  [1m[32m7.22 kB[39m[22m ([31m+6.16 kB[39m)
 "
 `;
