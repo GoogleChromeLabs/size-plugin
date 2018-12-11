@@ -1,6 +1,6 @@
 {
   "name": "size-plugin",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Tracks your Webpack asset sizes over time.",
   "main": "dist/size-plugin.js",
   "module": "src/index.mjs",
