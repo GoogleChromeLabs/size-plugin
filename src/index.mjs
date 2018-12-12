@@ -141,7 +141,7 @@ export default class SizePlugin {
 			output += msg + sizeText + '\n';
 		}
 		if (output) {
-			console.log(output);
+			console.log('\n' + output);
 		}
 	}
 
