@@ -35,7 +35,7 @@ export default class SizePlugin {
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
 		this.exclude = this.options.exclude;
 		this.history = this.options.history;
-		this.historyPath = path.resolve(this.options.historyPath || process.cwd(), 'build-sizes.json');
+		this.historyPath = path.resolve(process.cwd(), this.options.filename || 'build-sizes.json');
 		this.buildTimestamp = Math.floor(Date.now());
 	}
 
