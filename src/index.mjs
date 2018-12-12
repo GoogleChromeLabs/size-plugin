@@ -15,6 +15,7 @@
  */
 
 import path from 'path';
+import fs from 'fs';
 import promisify from 'util.promisify';
 import globPromise from 'glob';
 import minimatch from 'minimatch';
@@ -33,6 +34,9 @@ export default class SizePlugin {
 		this.options = options || {};
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
 		this.exclude = this.options.exclude;
+		this.json = this.options.json;
+		this.jsonPath = path.resolve(process.cwd(), this.options.filename || 'build-sizes.json');
+		this.buildTimestamp = Math.floor(Date.now());
 	}
 
 	reverseTemplate(filename, template) {
@@ -81,8 +85,8 @@ export default class SizePlugin {
 	stripHash(filename) {
 		return (
 			this.reverseTemplate(filename, this.output.filename) ||
-      this.reverseTemplate(filename, this.output.chunkFilename) ||
-      filename
+			this.reverseTemplate(filename, this.output.chunkFilename) ||
+			filename
 		);
 	}
 
@@ -104,6 +108,55 @@ export default class SizePlugin {
 		});
 	}
 
+	async writeFile (file, data) {
+		return new Promise((resolve, reject) => {
+			fs.writeFile(file, data, error => {
+				if (error) reject(error);
+				resolve();
+			});
+		});
+	}
+
+	async readFile (file) {
+		return new Promise((resolve, reject) => {
+			fs.readFile(file, (error, data) => {
+				if (error && error.code !== 'ENOENT') reject(error);
+				resolve(data);
+			});
+		});
+	}
+
+	async storeToFile (buildResult) {
+    console.log(this.jsonPath);
+		try {
+			const fileContents = await this.readFile(this.jsonPath);
+			let json = [];
+			if (fileContents) {
+				json = JSON.parse(fileContents);
+      }
+      
+			json.push(buildResult);
+			await this.writeFile(this.jsonPath, JSON.stringify(json));
+			console.log(chalk.green(`file got stored at: ${this.jsonPath}`));
+		}
+		catch (e) {
+			console.error(chalk.green(`Couldn't store json: ${e}`));
+		}
+  }
+  
+  async getPreviousSizeFromJson (fileName) {
+    const fileContents = await this.readFile(this.jsonPath);
+    if (fileContents) {
+      const json = JSON.parse(fileContents);
+      const files = json[json.length - 1].files;
+      const result = files.find( file => file.filename === fileName );
+      
+      return result.size;
+    }
+
+    return undefined;
+  }
+
 	async outputSizes (assets) {
 		// map of filenames to their previous size
 		// Fix #7 - fast-async doesn't allow non-promise values.
@@ -112,7 +165,7 @@ export default class SizePlugin {
 		const isExcluded = this.exclude ? minimatch.filter(this.exclude) : () => false;
 		const assetNames = Object.keys(assets).filter(file => isMatched(file) && !isExcluded(file));
 		const sizes = await Promise.all(assetNames.map(name => gzipSize(assets[name].source())));
-
+		
 		// map of de-hashed filenames to their final size
 		this.sizes = toMap(assetNames.map(filename => this.stripHash(filename)), sizes);
 
@@ -121,12 +174,32 @@ export default class SizePlugin {
 
 		const width = Math.max(...files.map(file => file.length));
 		let output = '';
+		
+		let jsonOutput= {
+      timestamp: this.buildTimestamp,
+      files: []
+    };
+
 		for (const name of files) {
-			const size = this.sizes[name] || 0;
-			const delta = size - (sizesBefore[name] || 0);
-			const msg = new Array(width - name.length + 2).join(' ') + name + ' ⏤  ';
+      const size = this.sizes[name] || 0;
+      let sizeBefore = sizesBefore[name] || 0;
+      if (sizeBefore === 0) {
+        sizeBefore = await this.getPreviousSizeFromJson(name);
+      }
+			const delta = size - (sizeBefore || 0);
+			const msg = `${new Array(width - name.length + 2).join(' ')}${name} ⏤  `;
 			const color = size > 100 * 1024 ? 'red' : size > 40 * 1024 ? 'yellow' : size > 20 * 1024 ? 'cyan' : 'green';
-			let sizeText = chalk[color](prettyBytes(size));
+      
+      if (this.json){
+        jsonOutput.files.push({
+          filename: name,
+          previous: sizeBefore || size,
+          size: size,
+          diff: delta || 0
+        });
+      }
+            
+      let sizeText = chalk[color](prettyBytes(size));
 			if (delta) {
 				let deltaText = (delta > 0 ? '+' : '') + prettyBytes(delta);
 				if (delta > 1024) {
@@ -141,6 +214,9 @@ export default class SizePlugin {
 			output += msg + sizeText + '\n';
 		}
 		if (output) {
+			if (this.json){
+				this.storeToFile(jsonOutput);
+			}
 			console.log(output);
 		}
 	}
