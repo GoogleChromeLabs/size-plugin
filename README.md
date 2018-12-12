@@ -52,8 +52,8 @@ const SizePlugin = require('size-plugin');
 module.exports = {
   plugins: [
     new SizePlugin({
-      history: true,
-      historyPath: 'reports' // Relative to where webpack is ran
+      json: true,
+      jsonPath: 'reports' // Relative to where webpack is ran
     })
   ]
 }

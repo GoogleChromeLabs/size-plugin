@@ -34,8 +34,8 @@ export default class SizePlugin {
 		this.options = options || {};
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
 		this.exclude = this.options.exclude;
-		this.history = this.options.history;
-		this.historyPath = path.resolve(process.cwd(), this.options.filename || 'build-sizes.json');
+		this.json = this.options.json;
+		this.jsonPath = path.resolve(process.cwd(), this.options.filename || 'build-sizes.json');
 		this.buildTimestamp = Math.floor(Date.now());
 	}
 
@@ -127,20 +127,35 @@ export default class SizePlugin {
 	}
 
 	async storeToFile (buildResult) {
+    console.log(this.jsonPath);
 		try {
-			const fileContents = await this.readFile(this.historyPath);
-			let json = {};
+			const fileContents = await this.readFile(this.jsonPath);
+			let json = [];
 			if (fileContents) {
 				json = JSON.parse(fileContents);
-			}
-			json[this.buildTimestamp] = buildResult[this.buildTimestamp];
-			await this.writeFile(this.historyPath, JSON.stringify(json));
-			console.log(chalk.green(`file got stored at: ${this.historyPath}`));
+      }
+      
+			json.push(buildResult);
+			await this.writeFile(this.jsonPath, JSON.stringify(json));
+			console.log(chalk.green(`file got stored at: ${this.jsonPath}`));
 		}
 		catch (e) {
-			console.error(chalk.green(`Couldn't store history: ${e}`));
+			console.error(chalk.green(`Couldn't store json: ${e}`));
 		}
-	}
+  }
+  
+  async getPreviousSizeFromJson (fileName) {
+    const fileContents = await this.readFile(this.jsonPath);
+    if (fileContents) {
+      const json = JSON.parse(fileContents);
+      const files = json[json.length - 1].files;
+      const result = files.find( file => file.filename === fileName );
+      
+      return result.size;
+    }
+
+    return undefined;
+  }
 
 	async outputSizes (assets) {
 		// map of filenames to their previous size
@@ -160,18 +175,31 @@ export default class SizePlugin {
 		const width = Math.max(...files.map(file => file.length));
 		let output = '';
 		
-		let jsonOutput = {};
-		jsonOutput[this.buildTimestamp] = {};
+		let jsonOutput= {
+      timestamp: this.buildTimestamp,
+      files: []
+    };
 
 		for (const name of files) {
-			const size = this.sizes[name] || 0;
-			const delta = size - (sizesBefore[name] || 0);
+      const size = this.sizes[name] || 0;
+      let sizeBefore = sizesBefore[name] || 0;
+      if (sizeBefore === 0) {
+        sizeBefore = await this.getPreviousSizeFromJson(name);
+      }
+			const delta = size - (sizeBefore || 0);
 			const msg = `${new Array(width - name.length + 2).join(' ')}${name} ⏤  `;
 			const color = size > 100 * 1024 ? 'red' : size > 40 * 1024 ? 'yellow' : size > 20 * 1024 ? 'cyan' : 'green';
-			
-			jsonOutput[this.buildTimestamp][name] = size;
-
-			let sizeText = chalk[color](prettyBytes(size));
+      
+      if (this.json){
+        jsonOutput.files.push({
+          filename: name,
+          previous: sizeBefore || size,
+          size: size,
+          diff: delta || 0
+        });
+      }
+            
+      let sizeText = chalk[color](prettyBytes(size));
 			if (delta) {
 				let deltaText = (delta > 0 ? '+' : '') + prettyBytes(delta);
 				if (delta > 1024) {
@@ -186,7 +214,7 @@ export default class SizePlugin {
 			output += msg + sizeText + '\n';
 		}
 		if (output) {
-			if (this.history){
+			if (this.json){
 				this.storeToFile(jsonOutput);
 			}
 			console.log(output);
