@@ -53,7 +53,7 @@ module.exports = {
   plugins: [
     new SizePlugin({
       json: true,
-      filename: 'reports' // Relative to where webpack is ran
+      filename: 'report.json' // Relative to where webpack is ran
     })
   ]
 }
