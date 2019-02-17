@@ -13,6 +13,7 @@
   <img src="https://i.imgur.com/3bWBrJm.png" width="602" alt="size-plugin">
 </p>
 
+> 🙋 Using Rollup? Check out the [rollup-plugin-size](https://github.com/luwes/rollup-plugin-size) port.
 
 ## Installation
 
