@@ -47,10 +47,12 @@ export function compile(entry, configDecorator) {
 			config = configDecorator(config) || config;
 		}
 		webpack(config, (err, stats) => {
-			if (err) return reject(err);
-			const info = stats.toJson();
-			if (stats.hasErrors()) return reject(info.errors.join('\n'));
-			resolve(info);
+			setTimeout(() => {
+				if (err) return reject(err);
+				const info = stats.toJson();
+				if (stats.hasErrors()) return reject(info.errors.join('\n'));
+				resolve(info);
+			}, 10);
 		});
 	});
 }

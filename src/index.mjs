@@ -90,18 +90,18 @@ export default class SizePlugin {
 		const outputPath = compiler.options.output.path;
 		this.output = compiler.options.output;
 		this.sizes = this.getSizes(outputPath);
+		const afterEmit = (compilation, callback) => {
+			process.nextTick(() => {
+				this.outputSizes(compilation.assets).catch(console.error);
+				callback();
+			});
+		};
 		// for webpack version > 4
 		if (compiler.hooks && compiler.hooks.afterEmit) {
-			return compiler.hooks.afterEmit.tapPromise(NAME, compilation =>
-				this.outputSizes(compilation.assets).catch(console.error)
-			);
+			return compiler.hooks.afterEmit.tapAsync(NAME, afterEmit);
 		}
 		// for webpack version < 3
-		return compiler.plugin('after-emit', (compilation, callback) => {
-			this.outputSizes(compilation.assets)
-				.catch(console.error)
-				.then(callback);
-		});
+		return compiler.plugin('after-emit', afterEmit);
 	}
 
 	async outputSizes (assets) {
