@@ -2,9 +2,9 @@
 
 exports[`size-plugin should display the size of a multiple output files 1`] = `
 "
-        bundle.js ⏤  [1m[32m1.06 kB[39m[22m ([31m+1.06 kB[39m)
- 1.*****.chunk.js ⏤  [32m137 B[39m (+137 B)
- 2.*****.chunk.js ⏤  [32m102 B[39m (+102 B)
+        bundle.js ⏤  [1m[32m1.04 kB[39m[22m ([31m+1.04 kB[39m)
+ 1.*****.chunk.js ⏤  [32m102 B[39m (+102 B)
+ 2.*****.chunk.js ⏤  [32m137 B[39m (+137 B)
 "
 `;
 
@@ -16,16 +16,16 @@ exports[`size-plugin should display the size of a single bundle file 1`] = `
 
 exports[`size-plugin should respect output.filename / output.chunkFilename 1`] = `
 "
- js-main.********************.js ⏤  [1m[32m1.11 kB[39m[22m ([31m+1.11 kB[39m)
-    js-1.********************.js ⏤  [32m137 B[39m (+137 B)
-    js-2.********************.js ⏤  [32m102 B[39m (+102 B)
+ js-main.********************.js ⏤  [1m[32m1.09 kB[39m[22m ([31m+1.09 kB[39m)
+    js-1.********************.js ⏤  [32m102 B[39m (+102 B)
+    js-2.********************.js ⏤  [32m137 B[39m (+137 B)
 "
 `;
 
 exports[`size-plugin should show size deltas for subsequent builds 1`] = `
 "
-        bundle.js ⏤  [1m[32m7.22 kB[39m[22m ([31m+6.16 kB[39m)
- 1.*****.chunk.js ⏤  [32m303 B[39m (+166 B)
- 2.*****.chunk.js ⏤  [32m102 B[39m
+        bundle.js ⏤  [1m[32m7.2 kB[39m[22m ([31m+6.16 kB[39m)
+ 1.*****.chunk.js ⏤  [32m102 B[39m
+ 2.*****.chunk.js ⏤  [32m303 B[39m (+166 B)
 "
 `;

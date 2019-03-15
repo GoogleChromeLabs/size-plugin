@@ -91,17 +91,23 @@ export default class SizePlugin {
 		this.output = compiler.options.output;
 		this.sizes = this.getSizes(outputPath);
 		const afterEmit = (compilation, callback) => {
-			process.nextTick(() => {
-				this.outputSizes(compilation.assets).catch(console.error);
-				callback();
-			});
+			this.outputSizes(compilation.assets).then(output => {
+				if (output) {
+					process.nextTick(() => {
+						console.log('\n' + output);
+					});
+				}
+			}).catch(console.error).then(callback);
 		};
+
 		// for webpack version > 4
-		if (compiler.hooks && compiler.hooks.afterEmit) {
-			return compiler.hooks.afterEmit.tapAsync(NAME, afterEmit);
+		if (compiler.hooks && compiler.hooks.emit) {
+			compiler.hooks.emit.tapAsync(NAME, afterEmit);
 		}
-		// for webpack version < 3
-		return compiler.plugin('after-emit', afterEmit);
+		else {
+			// for webpack version < 3
+			compiler.plugin('after-emit', afterEmit);
+		}
 	}
 
 	async outputSizes (assets) {
@@ -140,9 +146,10 @@ export default class SizePlugin {
 			}
 			output += msg + sizeText + '\n';
 		}
-		if (output) {
-			console.log('\n' + output);
-		}
+		return output;
+		// if (output) {
+		// 	console.log('\n' + output);
+		// }
 	}
 
 	async getSizes (cwd) {

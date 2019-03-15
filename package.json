@@ -61,7 +61,7 @@
     "fs-extra": "^7.0.0",
     "jest": "^23.5.0",
     "microbundle": "^0.6.0",
-    "webpack": "^4.17.1"
+    "webpack": "^4.29.6"
   },
   "dependencies": {
     "chalk": "^2.4.1",
