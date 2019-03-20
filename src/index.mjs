@@ -28,6 +28,33 @@ const glob = promisify(globPromise);
 
 const NAME = 'SizePlugin';
 
+/**
+ * @typedef Item
+ * @property {string} name Filename of the item
+ * @property {number} sizeBefore Previous size, in kilobytes
+ * @property {number} size Current size, in kilobytes
+ * @property {string} sizeText Formatted current size
+ * @property {number} delta Difference from previous size, in kilobytes
+ * @property {string} deltaText Formatted size delta
+ * @property {string} msg Full item's default message
+ * @property {string} color The item's default CLI color
+ */
+
+/**
+ * @typedef Data
+ * @property {Item[]} sizes List of file size items
+ * @property {string} output Current buffered output
+ */
+
+/**
+ * Size Plugin for Webpack
+ * @param {Object} options
+ * @param {string} [options.pattern] minimatch pattern of files to track
+ * @param {string} [options.exclude] minimatch pattern of files NOT to track
+ * @param {function} [options.stripHash] custom function to remove/normalize hashed filenames for comparison
+ * @param {(item:Item)=>string?} [options.decorateItem] custom function to decorate items
+ * @param {(data:Data)=>string?} [options.decorateAfter] custom function to decorate all output
+ */
 export default class SizePlugin {
 	constructor (options) {
 		this.options = options || {};
@@ -80,9 +107,10 @@ export default class SizePlugin {
 
 	stripHash(filename) {
 		return (
+			this.options.stripHash && this.options.stripHash(filename) ||
 			this.reverseTemplate(filename, this.output.filename) ||
-      this.reverseTemplate(filename, this.output.chunkFilename) ||
-      filename
+			this.reverseTemplate(filename, this.output.chunkFilename) ||
+			filename
 		);
 	}
 
@@ -127,14 +155,17 @@ export default class SizePlugin {
 
 		const width = Math.max(...files.map(file => file.length));
 		let output = '';
+		const items = [];
 		for (const name of files) {
 			const size = this.sizes[name] || 0;
-			const delta = size - (sizesBefore[name] || 0);
+			const sizeBefore = sizesBefore[name] || 0;
+			const delta = size - sizeBefore;
 			const msg = new Array(width - name.length + 2).join(' ') + name + ' ⏤  ';
 			const color = size > 100 * 1024 ? 'red' : size > 40 * 1024 ? 'yellow' : size > 20 * 1024 ? 'cyan' : 'green';
 			let sizeText = chalk[color](prettyBytes(size));
-			if (delta) {
-				let deltaText = (delta > 0 ? '+' : '') + prettyBytes(delta);
+			let deltaText = '';
+			if (delta && Math.abs(delta) > 1) {
+				deltaText = (delta > 0 ? '+' : '') + prettyBytes(delta);
 				if (delta > 1024) {
 					sizeText = chalk.bold(sizeText);
 					deltaText = chalk.red(deltaText);
@@ -144,12 +175,26 @@ export default class SizePlugin {
 				}
 				sizeText += ` (${deltaText})`;
 			}
-			output += msg + sizeText + '\n';
+			let text = msg + sizeText + '\n';
+			const item = { name, sizeBefore, size, sizeText, delta, deltaText, msg, color };
+			items.push(item);
+			if (this.options.decorateItem) {
+				text = this.options.decorateItem(text, item) || text;
+			}
+			output += text;
+		}
+		if (this.options.decorateAfter) {
+			const opts = {
+				sizes: items,
+				raw: { sizesBefore, sizes: this.sizes },
+				output
+			};
+			const text = this.options.decorateAfter(opts);
+			if (text) {
+				output += '\n' + text.replace(/^\n/g, '');
+			}
 		}
 		return output;
-		// if (output) {
-		// 	console.log('\n' + output);
-		// }
 	}
 
 	async getSizes (cwd) {
