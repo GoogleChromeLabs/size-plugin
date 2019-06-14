@@ -24,3 +24,9 @@ export function toMap(names, values) {
 export function dedupe(item, index, arr) {
 	return arr.indexOf(item) === index;
 }
+export function toFileMap(files){
+	return files.reduce((result, file) => {
+		result[file.filename] = file.size;
+		return result;
+	}, {});
+}
