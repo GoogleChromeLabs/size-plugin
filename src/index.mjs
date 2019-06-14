@@ -113,11 +113,31 @@ export default class SizePlugin {
 			filename
 		);
 	}
-
+	async save(files){
+		this.options.save && await this.options.save({
+			timestamp:Date.now(),
+			files:files.map(file=>({filename: file.name,
+			previous: file.sizeBefore,
+			size: file.size,
+			diff: file.size - file.sizeBefore}))
+		})
+	}
+	async load(outputPath){
+		if(this.options.load){
+			const {files}= await this.options.load()
+			return files.reduce(function(result,file){
+				result[file.filename]=file.size;
+				return result;
+			},{})
+		}else{
+			return this.getSizes(outputPath);
+		}
+	}
 	async apply(compiler) {
 		const outputPath = compiler.options.output.path;
 		this.output = compiler.options.output;
-		this.sizes = this.getSizes(outputPath);
+		this.sizes = this.load(outputPath);
+		
 		const afterEmit = (compilation, callback) => {
 			this.outputSizes(compilation.assets).then(output => {
 				if (output) {
@@ -194,6 +214,7 @@ export default class SizePlugin {
 				output += '\n' + text.replace(/^\n/g, '');
 			}
 		}
+		await this.save(items);
 		return output;
 	}
 
@@ -207,3 +228,4 @@ export default class SizePlugin {
 		return toMap(files.map(filename => this.stripHash(filename)), sizes);
 	}
 }
+
