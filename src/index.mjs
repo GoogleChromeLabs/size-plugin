@@ -128,7 +128,7 @@ export default class SizePlugin {
 		try {
 			const oldStatsStr = (await readFile(filepath)).toString();
 			const oldStats = JSON.parse(oldStatsStr);
-			return oldStats.sort((a, b) => a.timestamp - b.timestamp);
+			return oldStats.sort((a, b) => b.timestamp - a.timestamp);
 		}
 		catch (err) {
 			return [];
@@ -216,7 +216,7 @@ export default class SizePlugin {
 		);
 
 		// get a list of unique filenames
-		const files = Object.keys(this.sizes).filter(dedupe);
+		const files = [...Object.keys(sizesBefore),...Object.keys(this.sizes)].filter(dedupe);
 
 		const width = Math.max(...files.map(file => file.length));
 		let output = '';

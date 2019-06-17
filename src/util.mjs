@@ -26,7 +26,9 @@ export function dedupe(item, index, arr) {
 }
 export function toFileMap(files){
 	return files.reduce((result, file) => {
-		result[file.filename] = file.size;
+		if (file.size){ // excluding files with size 0
+			result[file.filename] = file.size;
+		}
 		return result;
 	}, {});
 }
