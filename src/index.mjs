@@ -29,6 +29,8 @@ const glob = promisify(globPromise);
 const writeFile = promisify(fs.writeFile);
 const readFile = promisify(fs.readFile);
 const NAME = 'SizePlugin';
+const BOT =process.env.SIZE_PLUGIN_BOT;
+const DIFF_FILE = 'size-plugin-diff.json';
 
 /**
  * @typedef Item
@@ -149,6 +151,7 @@ export default class SizePlugin {
 				diff: file.size - file.sizeBefore
 			}))
 		};
+		BOT && await writeFile(DIFF_FILE, JSON.stringify(stats, undefined, 2));
 		this.options.save && (await this.options.save(stats));
 		this.options.writeToDisk && !this.options.load && stats.files.some(file => file.diff>0) && (await this.writeToDisk(this.filename,stats));
 	}
