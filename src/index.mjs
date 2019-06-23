@@ -55,7 +55,6 @@ const DIFF_FILE = 'size-plugin-diff.json';
  * @param {Object} options
  * @param {string} [options.pattern] minimatch pattern of files to track
  * @param {string} [options.exclude] minimatch pattern of files NOT to track
- * @param {boolean} [options.writeToDisk] write filesizes to disk
  * @param {string} [options.filename] file name to save filesizes to disk
  * @param {function} [options.stripHash] custom function to remove/normalize hashed filenames for comparison
  * @param {(item:Item)=>string?} [options.decorateItem] custom function to decorate items
@@ -63,13 +62,12 @@ const DIFF_FILE = 'size-plugin-diff.json';
  */
 export default class SizePlugin {
 	constructor(options) {
-		this.options = options || { writeToDisk: false };
+		this.options = options || {};
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
 		this.exclude = this.options.exclude;
-		if ( this.options.writeToDisk ){
-			this.options.filename = this.options.filename || 'size-plugin.json';
-			this.filename = path.join(process.cwd(), this.options.filename);
-		}
+		this.options.filename = this.options.filename || 'size-plugin.json';
+		this.filename = path.join(process.cwd(), this.options.filename);
+
 	}
 
 	reverseTemplate(filename, template) {
@@ -137,9 +135,11 @@ export default class SizePlugin {
 		}
 	}
 	async writeToDisk(filename,stats) {
-		const data = await this.readFromDisk(filename);
-		data.unshift(stats);
-		await writeFile(filename, JSON.stringify(data, undefined, 2));
+		if (this.mode==='production' && !this.options.load && stats.files.some(file => file.diff>0)){
+			const data = await this.readFromDisk(filename);
+			data.unshift(stats);
+			await writeFile(filename, JSON.stringify(data, undefined, 2));
+		}
 	}
 	async save(files) {
 		const stats = {
@@ -153,19 +153,17 @@ export default class SizePlugin {
 		};
 		BOT && await writeFile(DIFF_FILE, JSON.stringify(stats, undefined, 2));
 		this.options.save && (await this.options.save(stats));
-		this.options.writeToDisk && !this.options.load && stats.files.some(file => file.diff>0) && (await this.writeToDisk(this.filename,stats));
+		await this.writeToDisk(this.filename,stats);
 	}
 	async load(outputPath) {
 		if (this.options.load) {
 			const { files } = await this.options.load();
 			return toFileMap(files);
 		}
-		else if (this.options.writeToDisk) {
-			const data = await this.readFromDisk(this.filename);
-			if (data.length){
-				const [{ files }] = data;
-				return toFileMap(files);
-			}
+		const data = await this.readFromDisk(this.filename);
+		if (data.length){
+			const [{ files }] = data;
+			return toFileMap(files);
 		}
 		return this.getSizes(outputPath);
 	}
@@ -173,6 +171,7 @@ export default class SizePlugin {
 		const outputPath = compiler.options.output.path;
 		this.output = compiler.options.output;
 		this.sizes = this.load(outputPath);
+		this.mode = compiler.options.mode;
 
 		const afterEmit = (compilation, callback) => {
 			this.outputSizes(compilation.assets)

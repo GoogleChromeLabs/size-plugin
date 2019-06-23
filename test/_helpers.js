@@ -29,6 +29,7 @@ export function compile(entry, configDecorator) {
 		entry = path.basename(entry);
 		let config = {
 			context,
+			mode: 'production',
 			entry: typeof entry==='string' ? path.resolve(context, entry) : entry,
 			output: {
 				path: path.resolve(__dirname, path.resolve(context, 'dist')),
