@@ -2,9 +2,9 @@
   "name": "size-plugin",
   "version": "1.2.0",
   "description": "Tracks your Webpack asset sizes over time.",
-  "main": "dist/size-plugin.js",
-  "module": "src/index.mjs",
-  "source": "src/index.mjs",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "source": "src/index.js",
   "scripts": {
     "build": "microbundle -f cjs --target node --no-compress",
     "prepare": "npm run -s build",
@@ -12,8 +12,7 @@
     "release": "npm t && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
   },
   "files": [
-    "src",
-    "dist"
+    "src"
   ],
   "keywords": [
     "webpack plugin",

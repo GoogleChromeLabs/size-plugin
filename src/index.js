@@ -14,16 +14,16 @@
  * the License.
  */
 
-import path from 'path';
-import promisify from 'util.promisify';
-import globPromise from 'glob';
-import minimatch from 'minimatch';
-import gzipSize from 'gzip-size';
-import chalk from 'chalk';
-import prettyBytes from 'pretty-bytes';
-import escapeRegExp from 'escape-string-regexp';
-import { toMap, dedupe, toFileMap } from './util.mjs';
-import fs from 'fs';
+const path = require('path');
+const promisify = require('util.promisify');
+const globPromise = require('glob');
+const minimatch = require('minimatch');
+const gzipSize = require('gzip-size');
+const chalk = require('chalk');
+const prettyBytes = require('pretty-bytes');
+const escapeRegExp = require('escape-string-regexp');
+const { toMap, dedupe, toFileMap } = require('./util');
+const fs = require('fs');
 
 const glob = promisify(globPromise);
 const writeFile = promisify(fs.writeFile);
@@ -38,7 +38,7 @@ const DIFF_FILE = 'size-plugin-diff.json';
  * @property {number} sizeBefore Previous size, in kilobytes
  * @property {number} size Current size, in kilobytes
  * @property {string} sizeText Formatted current size
- * @property {number} delta Difference from previous size, in kilobytes
+ * @property {number} delta Difference = require(previous size, in kilobytes
  * @property {string} deltaText Formatted size delta
  * @property {string} msg Full item's default message
  * @property {string} color The item's default CLI color
@@ -60,7 +60,7 @@ const DIFF_FILE = 'size-plugin-diff.json';
  * @param {(item:Item)=>string?} [options.decorateItem] custom function to decorate items
  * @param {(data:Data)=>string?} [options.decorateAfter] custom function to decorate all output
  */
-export default class SizePlugin {
+module.exports= class SizePlugin {
 	constructor(options) {
 		this.options = options || {};
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
