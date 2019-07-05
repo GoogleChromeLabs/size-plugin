@@ -6,7 +6,7 @@
   "module": "src/index.js",
   "source": "src/index.js",
   "scripts": {
-    "test": "jest --coverage",
+    "test": "jest --coverage"
   },
   "files": [
     "src"
