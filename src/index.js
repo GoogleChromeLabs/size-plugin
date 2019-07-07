@@ -23,7 +23,7 @@ const chalk = require('chalk');
 const prettyBytes = require('pretty-bytes');
 const escapeRegExp = require('escape-string-regexp');
 const { toMap, dedupe, toFileMap } = require('./util');
-const { publishSize, publishDiff }=require('./publish-size');
+const { publishSizes, publishDiff }=require('./publish-size');
 const fs = require('fs');
 
 const glob = promisify(globPromise);
@@ -138,7 +138,7 @@ module.exports= class SizePlugin {
 			const data = await this.readFromDisk(filename);
 			data.unshift(stats);
 			await writeFile(filename, JSON.stringify(data, undefined, 2));
-			await publishSize(data);
+			await publishSizes(data);
 		}
 	}
 	async save(files) {
