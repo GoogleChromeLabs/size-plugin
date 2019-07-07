@@ -1,17 +1,27 @@
 const { repo, sha, event, branch, pull_request_number, ci } = require('ci-env');
 const axios = require('axios');
-const url = 'https://size-plugin-store.now.sh/sizes';
-async function publishSizes(diff) {
-	console.log({repo, sha, event, branch, pull_request_number, ci })
+const url = 'https://size-plugin-store.now.sh';
+async function publishDiff(diff) {
 	if (ci && event == 'pull_request') {
 		try {
 			const params = { ci,repo, branch, sha, pull_request_number, diff };
-			await axios.post(url, params);
-			console.log("yay, pushed the diff!!")
+			await axios.post(`${url}/diff`, params);
+		}
+		catch (error) {
+			console.error('error: while publishing diff', error);
+		}
+	}
+}
+async function publishSizes(diff) {
+	// TODO: read allowed branch from configuration
+	if (ci && event == 'push' && branch==='master') {
+		try {
+			const params = { ci,repo, branch, sha, pull_request_number, diff };
+			await axios.post(`${url}/sizes`, params);
 		}
 		catch (error) {
 			console.error('error: while publishing sizes', error);
 		}
 	}
 }
-module.exports = publishSizes;
+module.exports = { publishSizes,publishDiff };
