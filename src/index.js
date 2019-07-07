@@ -23,14 +23,13 @@ const chalk = require('chalk');
 const prettyBytes = require('pretty-bytes');
 const escapeRegExp = require('escape-string-regexp');
 const { toMap, dedupe, toFileMap } = require('./util');
+const publishSize=require('./publish-size');
 const fs = require('fs');
 
 const glob = promisify(globPromise);
 const writeFile = promisify(fs.writeFile);
 const readFile = promisify(fs.readFile);
 const NAME = 'SizePlugin';
-const BOT =process.env.SIZE_PLUGIN_BOT;
-const DIFF_FILE = 'size-plugin-diff.json';
 
 /**
  * @typedef Item
@@ -151,7 +150,7 @@ module.exports= class SizePlugin {
 				diff: file.size - file.sizeBefore
 			}))
 		};
-		BOT && await writeFile(DIFF_FILE, JSON.stringify(stats, undefined, 2));
+		await publishSize(stats);
 		this.options.save && (await this.options.save(stats));
 		await this.writeToDisk(this.filename,stats);
 	}
@@ -290,4 +289,4 @@ module.exports= class SizePlugin {
 
 		return toMap(files.map(filename => this.stripHash(filename)), sizes);
 	}
-}
+};
