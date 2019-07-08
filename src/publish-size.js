@@ -12,12 +12,12 @@ async function publishDiff(diff) {
 		}
 	}
 }
-async function publishSizes(diff) {
+async function publishSizes(size) {
 	// TODO: read allowed branch from configuration
 	if (ci && event == 'push' && branch==='master') {
 		try {
-			const params = { ci,repo, branch, sha, pull_request_number, diff };
-			await axios.post(`${url}/sizes`, params);
+			const params = { ci,repo, branch, sha, pull_request_number, size };
+			await axios.post(`${url}/size`, params);
 		}
 		catch (error) {
 			console.error('error: while publishing sizes', error);
