@@ -1,6 +1,9 @@
 const { repo, sha, event, branch, pull_request_number, ci } = require('ci-env');
 const axios = require('axios');
 const SIZE_STORE_ENDPOINT = process.env.SIZE_STORE_ENDPOINT || 'https://size-plugin-store.now.sh' ;
+
+// TODO: add option to turn off publishing of sizes.
+
 async function publishDiff(diff) {
 	if (process.env.NODE_ENV !=='test' &&  ci && event == 'pull_request') {
 		try {
