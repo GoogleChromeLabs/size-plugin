@@ -24,11 +24,9 @@ const prettyBytes = require('pretty-bytes');
 const escapeRegExp = require('escape-string-regexp');
 const { toMap, dedupe, toFileMap } = require('./util');
 const { publishSizes, publishDiff }=require('./publish-size');
-const fs = require('fs');
+const fs = require('fs-extra');
 
 const glob = promisify(globPromise);
-const writeFile = promisify(fs.writeFile);
-const readFile = promisify(fs.readFile);
 const NAME = 'SizePlugin';
 
 /**
@@ -123,10 +121,10 @@ module.exports= class SizePlugin {
 			filename
 		);
 	}
-	async readFromDisk(filepath) {
+	async readFromDisk(filename) {
 		try {
-			const oldStatsStr = (await readFile(filepath)).toString();
-			const oldStats = JSON.parse(oldStatsStr);
+			await fs.ensureFile(filename);
+			const oldStats = await fs.readJSON(filename);
 			return oldStats.sort((a, b) => b.timestamp - a.timestamp);
 		}
 		catch (err) {
@@ -137,7 +135,8 @@ module.exports= class SizePlugin {
 		if (this.mode==='production' && !this.options.load && stats.files.some(file => file.diff>0)){
 			const data = await this.readFromDisk(filename);
 			data.unshift(stats);
-			await writeFile(filename, JSON.stringify(data, undefined, 2));
+			await fs.ensureFile(filename);
+			await fs.writeJSON(filename, data);
 			await publishSizes(data,this.options.filename);
 		}
 	}
