@@ -132,7 +132,7 @@ module.exports= class SizePlugin {
 		}
 	}
 	async writeToDisk(filename,stats) {
-		if (this.mode==='production' && !this.options.load && stats.files.some(file => file.diff>0)){
+		if (this.mode==='production' && !this.options.load && stats.files.some(file => file.diff!==0)){
 			const data = await this.readFromDisk(filename);
 			data.unshift(stats);
 			await fs.ensureFile(filename);
