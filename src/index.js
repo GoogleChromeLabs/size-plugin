@@ -138,7 +138,7 @@ module.exports= class SizePlugin {
 			const data = await this.readFromDisk(filename);
 			data.unshift(stats);
 			await writeFile(filename, JSON.stringify(data, undefined, 2));
-			await publishSizes(data);
+			await publishSizes(data,this.options.filename);
 		}
 	}
 	async save(files) {

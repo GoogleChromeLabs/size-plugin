@@ -15,11 +15,11 @@ async function publishDiff(diff) {
 		}
 	}
 }
-async function publishSizes(size) {
+async function publishSizes(size,filename) {
 	// TODO: read allowed branch from configuration
 	if (process.env.NODE_ENV !=='test' &&  ci && event == 'push' && branch==='master') {
 		try {
-			const params = { ci,repo, branch, sha, pull_request_number, size };
+			const params = { ci,repo, branch, sha, pull_request_number, size,filename };
 			await axios.post(`${SIZE_STORE_ENDPOINT}/size`, params);
 		}
 		catch (error) {
