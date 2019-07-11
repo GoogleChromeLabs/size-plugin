@@ -150,7 +150,7 @@ module.exports= class SizePlugin {
 				diff: file.size - file.sizeBefore
 			}))
 		};
-		await publishDiff(stats);
+		await publishDiff(stats,this.options.filename);
 		this.options.save && (await this.options.save(stats));
 		await this.writeToDisk(this.filename,stats);
 	}
