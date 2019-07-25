@@ -23,7 +23,7 @@ const chalk = require('chalk');
 const prettyBytes = require('pretty-bytes');
 const escapeRegExp = require('escape-string-regexp');
 const { toMap, dedupe, toFileMap } = require('./util');
-const { publishSizes, publishDiff }=require('./publish-size');
+const { publishSizes, publishDiff } = require('./publish-size');
 const fs = require('fs-extra');
 
 const glob = promisify(globPromise);
@@ -57,15 +57,15 @@ const NAME = 'SizePlugin';
  * @param {(item:Item)=>string?} [options.decorateItem] custom function to decorate items
  * @param {(data:Data)=>string?} [options.decorateAfter] custom function to decorate all output
  */
-module.exports= class SizePlugin {
+module.exports = class SizePlugin {
 	constructor(options) {
 		this.options = options || {};
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
 		this.exclude = this.options.exclude;
 		this.options.filename = this.options.filename || 'size-plugin.json';
-		this.options.publish = this.options.publish!==false;
+		this.options.publish = this.options.publish !== false;
+		this.options.writeFile = this.options.writeFile !== false;
 		this.filename = path.join(process.cwd(), this.options.filename);
-
 	}
 
 	reverseTemplate(filename, template) {
@@ -103,7 +103,7 @@ module.exports= class SizePlugin {
 					out += `([0-9a-zA-Z]{${len}})`;
 					replace[count++] = true;
 				}
-				else if (type) {
+ else if (type) {
 					out += '(.*?)';
 					replace[count++] = false;
 				}
@@ -128,17 +128,23 @@ module.exports= class SizePlugin {
 			const oldStats = await fs.readJSON(filename);
 			return oldStats.sort((a, b) => b.timestamp - a.timestamp);
 		}
-		catch (err) {
+ catch (err) {
 			return [];
 		}
 	}
-	async writeToDisk(filename,stats) {
-		if (this.mode==='production' && !this.options.load && stats.files.some(file => file.diff!==0)){
+	async writeToDisk(filename, stats) {
+		if (
+			this.mode === 'production' &&
+			!this.options.load &&
+			stats.files.some(file => file.diff !== 0)
+		) {
 			const data = await this.readFromDisk(filename);
 			data.unshift(stats);
-			await fs.ensureFile(filename);
-			await fs.writeJSON(filename, data);
-			this.options.publish && await publishSizes(data,this.options.filename);
+			if (this.options.writeFile) {
+				await fs.ensureFile(filename);
+				await fs.writeJSON(filename, data);
+			}
+			this.options.publish && (await publishSizes(data, this.options.filename));
 		}
 	}
 	async save(files) {
@@ -151,9 +157,9 @@ module.exports= class SizePlugin {
 				diff: file.size - file.sizeBefore
 			}))
 		};
-		this.options.publish && await publishDiff(stats,this.options.filename);
+		this.options.publish && (await publishDiff(stats, this.options.filename));
 		this.options.save && (await this.options.save(stats));
-		await this.writeToDisk(this.filename,stats);
+		await this.writeToDisk(this.filename, stats);
 	}
 	async load(outputPath) {
 		if (this.options.load) {
@@ -161,7 +167,7 @@ module.exports= class SizePlugin {
 			return toFileMap(files);
 		}
 		const data = await this.readFromDisk(this.filename);
-		if (data.length){
+		if (data.length) {
 			const [{ files }] = data;
 			return toFileMap(files);
 		}
@@ -190,7 +196,7 @@ module.exports= class SizePlugin {
 		if (compiler.hooks && compiler.hooks.emit) {
 			compiler.hooks.emit.tapAsync(NAME, afterEmit);
 		}
-		else {
+ else {
 			// for webpack version < 3
 			compiler.plugin('after-emit', afterEmit);
 		}
@@ -218,7 +224,10 @@ module.exports= class SizePlugin {
 		);
 
 		// get a list of unique filenames
-		const files = [...Object.keys(sizesBefore),...Object.keys(this.sizes)].filter(dedupe);
+		const files = [
+			...Object.keys(sizesBefore),
+			...Object.keys(this.sizes)
+		].filter(dedupe);
 
 		const width = Math.max(...files.map(file => file.length));
 		let output = '';
@@ -244,7 +253,7 @@ module.exports= class SizePlugin {
 					sizeText = chalk.bold(sizeText);
 					deltaText = chalk.red(deltaText);
 				}
-				else if (delta < -10) {
+ else if (delta < -10) {
 					deltaText = chalk.green(deltaText);
 				}
 				sizeText += ` (${deltaText})`;
