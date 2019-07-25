@@ -63,6 +63,7 @@ module.exports= class SizePlugin {
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
 		this.exclude = this.options.exclude;
 		this.options.filename = this.options.filename || 'size-plugin.json';
+		this.options.publish = this.options.publish!==false;
 		this.filename = path.join(process.cwd(), this.options.filename);
 
 	}
@@ -137,7 +138,7 @@ module.exports= class SizePlugin {
 			data.unshift(stats);
 			await fs.ensureFile(filename);
 			await fs.writeJSON(filename, data);
-			await publishSizes(data,this.options.filename);
+			this.options.publish && await publishSizes(data,this.options.filename);
 		}
 	}
 	async save(files) {
@@ -150,7 +151,7 @@ module.exports= class SizePlugin {
 				diff: file.size - file.sizeBefore
 			}))
 		};
-		await publishDiff(stats,this.options.filename);
+		this.options.publish && await publishDiff(stats,this.options.filename);
 		this.options.save && (await this.options.save(stats));
 		await this.writeToDisk(this.filename,stats);
 	}
