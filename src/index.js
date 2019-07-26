@@ -35,7 +35,7 @@ const NAME = 'SizePlugin';
  * @property {number} sizeBefore Previous size, in kilobytes
  * @property {number} size Current size, in kilobytes
  * @property {string} sizeText Formatted current size
- * @property {number} delta Difference = require(previous size, in kilobytes
+ * @property {number} delta Difference from previous size, in kilobytes
  * @property {string} deltaText Formatted size delta
  * @property {string} msg Full item's default message
  * @property {string} color The item's default CLI color
