@@ -22,15 +22,12 @@ import gzipSize from 'gzip-size';
 import chalk from 'chalk';
 import prettyBytes from 'pretty-bytes';
 import escapeRegExp from 'escape-string-regexp';
-import { toMap, dedupe, toFileMap } from './util.mjs';
-import fs from 'fs';
+import { toMap, dedupe, toFileMap } from './util';
+import { publishSizes, publishDiff } from './publish-size';
+import fs from 'fs-extra';
 
 const glob = promisify(globPromise);
-const writeFile = promisify(fs.writeFile);
-const readFile = promisify(fs.readFile);
 const NAME = 'SizePlugin';
-const BOT =process.env.SIZE_PLUGIN_BOT;
-const DIFF_FILE = 'size-plugin-diff.json';
 
 /**
  * @typedef Item
@@ -38,7 +35,7 @@ const DIFF_FILE = 'size-plugin-diff.json';
  * @property {number} sizeBefore Previous size, in kilobytes
  * @property {number} size Current size, in kilobytes
  * @property {string} sizeText Formatted current size
- * @property {number} delta Difference from previous size, in kilobytes
+ * @property {number} delta Difference = require(previous size, in kilobytes
  * @property {string} deltaText Formatted size delta
  * @property {string} msg Full item's default message
  * @property {string} color The item's default CLI color
@@ -60,14 +57,15 @@ const DIFF_FILE = 'size-plugin-diff.json';
  * @param {(item:Item)=>string?} [options.decorateItem] custom function to decorate items
  * @param {(data:Data)=>string?} [options.decorateAfter] custom function to decorate all output
  */
-export default class SizePlugin {
+module.exports = class SizePlugin {
 	constructor(options) {
 		this.options = options || {};
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
 		this.exclude = this.options.exclude;
 		this.options.filename = this.options.filename || 'size-plugin.json';
+		this.options.publish = this.options.publish !== false;
+		this.options.writeFile = this.options.writeFile !== false;
 		this.filename = path.join(process.cwd(), this.options.filename);
-
 	}
 
 	reverseTemplate(filename, template) {
@@ -124,21 +122,29 @@ export default class SizePlugin {
 			filename
 		);
 	}
-	async readFromDisk(filepath) {
+	async readFromDisk(filename) {
 		try {
-			const oldStatsStr = (await readFile(filepath)).toString();
-			const oldStats = JSON.parse(oldStatsStr);
+			await fs.ensureFile(filename);
+			const oldStats = await fs.readJSON(filename);
 			return oldStats.sort((a, b) => b.timestamp - a.timestamp);
 		}
 		catch (err) {
 			return [];
 		}
 	}
-	async writeToDisk(filename,stats) {
-		if (this.mode==='production' && !this.options.load && stats.files.some(file => file.diff>0)){
+	async writeToDisk(filename, stats) {
+		if (
+			this.mode === 'production' &&
+			!this.options.load &&
+			stats.files.some(file => file.diff !== 0)
+		) {
 			const data = await this.readFromDisk(filename);
 			data.unshift(stats);
-			await writeFile(filename, JSON.stringify(data, undefined, 2));
+			if (this.options.writeFile) {
+				await fs.ensureFile(filename);
+				await fs.writeJSON(filename, data);
+			}
+			this.options.publish && (await publishSizes(data, this.options.filename));
 		}
 	}
 	async save(files) {
@@ -151,9 +157,9 @@ export default class SizePlugin {
 				diff: file.size - file.sizeBefore
 			}))
 		};
-		BOT && await writeFile(DIFF_FILE, JSON.stringify(stats, undefined, 2));
+		this.options.publish && (await publishDiff(stats, this.options.filename));
 		this.options.save && (await this.options.save(stats));
-		await this.writeToDisk(this.filename,stats);
+		await this.writeToDisk(this.filename, stats);
 	}
 	async load(outputPath) {
 		if (this.options.load) {
@@ -161,7 +167,7 @@ export default class SizePlugin {
 			return toFileMap(files);
 		}
 		const data = await this.readFromDisk(this.filename);
-		if (data.length){
+		if (data.length) {
 			const [{ files }] = data;
 			return toFileMap(files);
 		}
@@ -218,7 +224,10 @@ export default class SizePlugin {
 		);
 
 		// get a list of unique filenames
-		const files = [...Object.keys(sizesBefore),...Object.keys(this.sizes)].filter(dedupe);
+		const files = [
+			...Object.keys(sizesBefore),
+			...Object.keys(this.sizes)
+		].filter(dedupe);
 
 		const width = Math.max(...files.map(file => file.length));
 		let output = '';
@@ -290,4 +299,4 @@ export default class SizePlugin {
 
 		return toMap(files.map(filename => this.stripHash(filename)), sizes);
 	}
-}
+};
