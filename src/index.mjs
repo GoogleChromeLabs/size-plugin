@@ -22,8 +22,8 @@ import gzipSize from 'gzip-size';
 import chalk from 'chalk';
 import prettyBytes from 'pretty-bytes';
 import escapeRegExp from 'escape-string-regexp';
-import { toMap, dedupe, toFileMap } from './util';
-import { publishSizes, publishDiff } from './publish-size';
+import { toMap, dedupe, toFileMap } from './util.mjs';
+import { publishSizes, publishDiff } from './publish-size.mjs';
 import fs from 'fs-extra';
 
 const glob = promisify(globPromise);
@@ -57,7 +57,7 @@ const NAME = 'SizePlugin';
  * @param {(item:Item)=>string?} [options.decorateItem] custom function to decorate items
  * @param {(data:Data)=>string?} [options.decorateAfter] custom function to decorate all output
  */
-module.exports = class SizePlugin {
+export default class SizePlugin {
 	constructor(options) {
 		this.options = options || {};
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
