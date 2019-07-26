@@ -53,6 +53,8 @@ const NAME = 'SizePlugin';
  * @param {string} [options.pattern] minimatch pattern of files to track
  * @param {string} [options.exclude] minimatch pattern of files NOT to track
  * @param {string} [options.filename] file name to save filesizes to disk
+ * @param {string} [options.publish] option to publish filesizes to size-plugin-store
+ * @param {string} [options.writeFile] option to save filesizes to disk
  * @param {function} [options.stripHash] custom function to remove/normalize hashed filenames for comparison
  * @param {(item:Item)=>string?} [options.decorateItem] custom function to decorate items
  * @param {(data:Data)=>string?} [options.decorateAfter] custom function to decorate all output
@@ -135,7 +137,6 @@ export default class SizePlugin {
 	async writeToDisk(filename, stats) {
 		if (
 			this.mode === 'production' &&
-			!this.options.load &&
 			stats.files.some(file => file.diff !== 0)
 		) {
 			const data = await this.readFromDisk(filename);
@@ -162,10 +163,6 @@ export default class SizePlugin {
 		await this.writeToDisk(this.filename, stats);
 	}
 	async load(outputPath) {
-		if (this.options.load) {
-			const { files } = await this.options.load();
-			return toFileMap(files);
-		}
 		const data = await this.readFromDisk(this.filename);
 		if (data.length) {
 			const [{ files }] = data;
