@@ -65,7 +65,6 @@ export default class SizePlugin {
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
 		this.exclude = this.options.exclude;
 		this.options.filename = this.options.filename || 'size-plugin.json';
-		this.options.publish = this.options.publish !== false;
 		this.options.writeFile = this.options.writeFile !== false;
 		this.filename = path.join(process.cwd(), this.options.filename);
 	}
