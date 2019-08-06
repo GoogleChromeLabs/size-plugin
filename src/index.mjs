@@ -54,7 +54,7 @@ const NAME = 'SizePlugin';
  * @param {string} [options.exclude] minimatch pattern of files NOT to track
  * @param {string} [options.filename] file name to save filesizes to disk
  * @param {string} [options.publish] option to publish filesizes to size-plugin-store
- * @param {string} [options.writeFile] option to save filesizes to disk
+ * @param {boolean} [options.writeFile] option to save filesizes to disk
  * @param {function} [options.stripHash] custom function to remove/normalize hashed filenames for comparison
  * @param {(item:Item)=>string?} [options.decorateItem] custom function to decorate items
  * @param {(data:Data)=>string?} [options.decorateAfter] custom function to decorate all output
