@@ -26,6 +26,7 @@ function withSizePlugin (config) {
 async function clearDist () {
 	await fs.remove(path.resolve(__dirname, 'fixtures/basic/dist'));
 	await fs.remove(path.resolve(__dirname, 'fixtures/splits/dist'));
+	await fs.remove(path.resolve(process.cwd(), 'size-plugin.json'));
 }
 
 beforeAll(clearDist);
