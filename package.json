@@ -7,6 +7,7 @@
   "source": "src/index.mjs",
   "scripts": {
     "build": "microbundle -f cjs --target node --no-compress",
+    "doc": "documentation readme src/index.mjs -a public --section Options",
     "prepare": "npm run -s build",
     "test": "jest --coverage",
     "release": "npm t && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
@@ -56,6 +57,7 @@
     "babel-core": "^6.26.3",
     "babel-jest": "^23.6.0",
     "babel-preset-env": "^1.7.0",
+    "documentation": "^12.1.1",
     "eslint": "^5.16.0",
     "eslint-config-developit": "^1.1.1",
     "fs-extra": "^7.0.1",
