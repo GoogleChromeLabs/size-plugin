@@ -30,25 +30,7 @@ const glob = promisify(globPromise);
 const NAME = 'SizePlugin';
 
 /**
- * @typedef Item
- * @property {string} name Filename of the item
- * @property {number} sizeBefore Previous size, in kilobytes
- * @property {number} size Current size, in kilobytes
- * @property {string} sizeText Formatted current size
- * @property {number} delta Difference from previous size, in kilobytes
- * @property {string} deltaText Formatted size delta
- * @property {string} msg Full item's default message
- * @property {string} color The item's default CLI color
- */
-
-/**
- * @typedef Data
- * @property {Item[]} sizes List of file size items
- * @property {string} output Current buffered output
- */
-
-/**
- * Size Plugin for Webpack
+ * `new SizePlugin(options)`
  * @param {Object} options
  * @param {string} [options.pattern] minimatch pattern of files to track
  * @param {string} [options.exclude] minimatch pattern of files NOT to track
@@ -58,6 +40,7 @@ const NAME = 'SizePlugin';
  * @param {function} [options.stripHash] custom function to remove/normalize hashed filenames for comparison
  * @param {(item:Item)=>string?} [options.decorateItem] custom function to decorate items
  * @param {(data:Data)=>string?} [options.decorateAfter] custom function to decorate all output
+ * @public
  */
 export default class SizePlugin {
 	constructor(options) {
@@ -295,4 +278,28 @@ export default class SizePlugin {
 
 		return toMap(files.map(filename => this.stripHash(filename)), sizes);
 	}
-};
+}
+
+
+/**
+ * @name Item
+ * @typedef Item
+ * @property {string} name Filename of the item
+ * @property {number} sizeBefore Previous size, in kilobytes
+ * @property {number} size Current size, in kilobytes
+ * @property {string} sizeText Formatted current size
+ * @property {number} delta Difference from previous size, in kilobytes
+ * @property {string} deltaText Formatted size delta
+ * @property {string} msg Full item's default message
+ * @property {string} color The item's default CLI color
+ * @public
+ */
+
+
+/**
+ * @name Data
+ * @typedef Data
+ * @property {Item[]} sizes List of file size items
+ * @property {string} output Current buffered output
+ * @public
+ */
