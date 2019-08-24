@@ -108,6 +108,9 @@ export default class SizePlugin {
 	}
 	async readFromDisk(filename) {
 		try {
+			if (!this.options.writeFile) {
+				return [];
+			}
 			await fs.ensureFile(filename);
 			const oldStats = await fs.readJSON(filename);
 			return oldStats.sort((a, b) => b.timestamp - a.timestamp);
