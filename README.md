@@ -65,7 +65,7 @@ module.exports = {
     -   `options.pattern` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** minimatch pattern of files to track
     -   `options.exclude` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** minimatch pattern of files NOT to track
     -   `options.filename` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** file name to save filesizes to disk
-    -   `options.publish` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** option to publish filesizes to size-plugin-store
+    -   `options.publish` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** option to publish filesizes to [size-plugin-store](https://github.com/kuldeepkeshwar/size-plugin-bot)
     -   `options.writeFile` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** option to save filesizes to disk
     -   `options.stripHash` **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)?** custom function to remove/normalize hashed filenames for comparison
 
