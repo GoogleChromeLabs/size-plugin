@@ -34,10 +34,11 @@ const NAME = 'SizePlugin';
  * @public
  */
 export default class SizePlugin {
-	constructor(opts={}) {
-		const coreOptions={ ...opts,stripHash: opts.stripHash||this.stripHash.bind(this) };
-		const { outputSizes, options } = core(coreOptions);
-		this.options = options;
+	constructor(options) {
+		const pluginOptions=options||{};
+		const coreOptions={ ...pluginOptions,stripHash: pluginOptions.stripHash||this.stripHash.bind(this) };
+		const { outputSizes, options: _options } = core(coreOptions);
+		this.options = _options;
 		this.outputSizes = outputSizes;
 	}
 

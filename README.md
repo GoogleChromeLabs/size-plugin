@@ -63,7 +63,6 @@ module.exports = {
 
 #### Parameters
 
--   `opts`   (optional, default `{}`)
 -   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
     -   `options.compression` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** compression method(gzip/brotli) to use, default: 'gzip'
     -   `options.pattern` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** minimatch pattern of files to track
