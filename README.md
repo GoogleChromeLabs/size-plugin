@@ -14,7 +14,7 @@
 </p>
 
 > 🙋 Using Rollup? Check out the [rollup-plugin-size](https://github.com/luwes/rollup-plugin-size) port.
-
+>
 > 🙋‍♂ Using CI ? Check out [size-plugin-bot](https://github.com/kuldeepkeshwar/size-plugin-bot) 🤖 to automate intergation with CI
 
 ## Installation
@@ -63,7 +63,9 @@ module.exports = {
 
 #### Parameters
 
+-   `opts`   (optional, default `{}`)
 -   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
+    -   `options.compression` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** compression method(gzip/brotli) to use, default: 'gzip'
     -   `options.pattern` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** minimatch pattern of files to track
     -   `options.exclude` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** minimatch pattern of files NOT to track
     -   `options.filename` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** file name to save filesizes to disk
