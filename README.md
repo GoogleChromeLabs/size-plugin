@@ -15,7 +15,7 @@
 
 > 🙋 Using Rollup? Check out the [rollup-plugin-size](https://github.com/luwes/rollup-plugin-size) port.
 
-> 🙋‍♂ Using [Travis CI](https://travis-ci.org), [CircleCI](https://circleci.com/), [Wercker](http://www.wercker.com), and [Drone](http://readme.drone.io/) ? Check out [size-plugin-bot](https://github.com/kuldeepkeshwar/size-plugin-bot) 🤖 to automate intergation with CI
+> 🙋‍♂ Using CI ? Check out [size-plugin-bot](https://github.com/kuldeepkeshwar/size-plugin-bot) 🤖 to automate intergation with CI
 
 ## Installation
 
