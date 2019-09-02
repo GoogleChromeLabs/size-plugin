@@ -66,14 +66,8 @@
     "webpack": "^4.39.2"
   },
   "dependencies": {
-    "chalk": "^2.4.2",
     "escape-string-regexp": "^1.0.5",
-    "glob": "^7.1.4",
-    "gzip-size": "^5.1.1",
-    "minimatch": "^3.0.4",
-    "pretty-bytes": "^5.3.0",
-    "size-plugin-store": "^0.0.1",
-    "util.promisify": "^1.0.0"
+    "size-plugin-core": "^0.0.2"
   },
   "peerDependencies": {
     "webpack": "*"

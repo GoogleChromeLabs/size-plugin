@@ -14,19 +14,9 @@
  * the License.
  */
 
-import path from 'path';
-import promisify from 'util.promisify';
-import globPromise from 'glob';
-import minimatch from 'minimatch';
-import gzipSize from 'gzip-size';
-import chalk from 'chalk';
-import prettyBytes from 'pretty-bytes';
 import escapeRegExp from 'escape-string-regexp';
-import { toMap, dedupe, toFileMap } from './util.mjs';
-import { publishSizes, publishDiff } from 'size-plugin-store';
-import fs from 'fs-extra';
+import core from 'size-plugin-core';
 
-const glob = promisify(globPromise);
 const NAME = 'SizePlugin';
 
 /**
@@ -43,13 +33,11 @@ const NAME = 'SizePlugin';
  * @public
  */
 export default class SizePlugin {
-	constructor(options) {
-		this.options = options || {};
-		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
-		this.exclude = this.options.exclude;
-		this.options.filename = this.options.filename || 'size-plugin.json';
-		this.options.writeFile = this.options.writeFile !== false;
-		this.filename = path.join(process.cwd(), this.options.filename);
+	constructor(opts={}) {
+		const coreOptions={ ...opts,stripHash: opts.stripHash||this.stripHash.bind(this) };
+		const { outputSizes, options } = core(coreOptions);
+		this.options = options;
+		this.outputSizes = outputSizes;
 	}
 
 	reverseTemplate(filename, template) {
@@ -100,65 +88,27 @@ export default class SizePlugin {
 
 	stripHash(filename) {
 		return (
-			(this.options.stripHash && this.options.stripHash(filename)) ||
 			this.reverseTemplate(filename, this.output.filename) ||
 			this.reverseTemplate(filename, this.output.chunkFilename) ||
 			filename
 		);
 	}
-	async readFromDisk(filename) {
-		try {
-			const oldStats = await fs.readJSON(filename);
-			return oldStats.sort((a, b) => b.timestamp - a.timestamp);
-		}
-		catch (err) {
-			return [];
-		}
-	}
-	async writeToDisk(filename, stats) {
-		if (
-			this.mode === 'production' &&
-			stats.files.some(file => file.diff !== 0)
-		) {
-			const data = await this.readFromDisk(filename);
-			data.unshift(stats);
-			if (this.options.writeFile) {
-				await fs.ensureFile(filename);
-				await fs.writeJSON(filename, data);
-			}
-			this.options.publish && (await publishSizes(data, this.options.filename));
-		}
-	}
-	async save(files) {
-		const stats = {
-			timestamp: Date.now(),
-			files: files.map(file => ({
-				filename: file.name,
-				previous: file.sizeBefore,
-				size: file.size,
-				diff: file.size - file.sizeBefore
-			}))
-		};
-		this.options.publish && (await publishDiff(stats, this.options.filename));
-		this.options.save && (await this.options.save(stats));
-		await this.writeToDisk(this.filename, stats);
-	}
-	async load(outputPath) {
-		const data = await this.readFromDisk(this.filename);
-		if (data.length) {
-			const [{ files }] = data;
-			return toFileMap(files);
-		}
-		return this.getSizes(outputPath);
-	}
+
 	async apply(compiler) {
-		const outputPath = compiler.options.output.path;
 		this.output = compiler.options.output;
-		this.sizes = this.load(outputPath);
-		this.mode = compiler.options.mode;
+		this.options.mode = compiler.options.mode;
+		const outputPath = compiler.options.output.path;
 
 		const afterEmit = (compilation, callback) => {
-			this.outputSizes(compilation.assets)
+			const assets = Object.keys(compilation.assets).reduce((agg, key) => {
+				agg[key] = {
+					source: compilation.assets[key].source()
+				};
+				return agg;
+			}, {});
+			// assets => {'a.js':{source:'console.log(1)'}}
+
+			this.outputSizes(assets, outputPath)
 				.then(output => {
 					if (output) {
 						process.nextTick(() => {
@@ -179,106 +129,7 @@ export default class SizePlugin {
 			compiler.plugin('after-emit', afterEmit);
 		}
 	}
-
-	async outputSizes(assets) {
-		// map of filenames to their previous size
-		// Fix #7 - fast-async doesn't allow non-promise values.
-		const sizesBefore = await Promise.resolve(this.sizes);
-		const isMatched = minimatch.filter(this.pattern);
-		const isExcluded = this.exclude
-			? minimatch.filter(this.exclude)
-			: () => false;
-		const assetNames = Object.keys(assets).filter(
-			file => isMatched(file) && !isExcluded(file)
-		);
-		const sizes = await Promise.all(
-			assetNames.map(name => gzipSize(assets[name].source()))
-		);
-
-		// map of de-hashed filenames to their final size
-		this.sizes = toMap(
-			assetNames.map(filename => this.stripHash(filename)),
-			sizes
-		);
-
-		// get a list of unique filenames
-		const files = [
-			...Object.keys(sizesBefore),
-			...Object.keys(this.sizes)
-		].filter(dedupe);
-
-		const width = Math.max(...files.map(file => file.length));
-		let output = '';
-		const items = [];
-		for (const name of files) {
-			const size = this.sizes[name] || 0;
-			const sizeBefore = sizesBefore[name] || 0;
-			const delta = size - sizeBefore;
-			const msg = new Array(width - name.length + 2).join(' ') + name + ' ⏤  ';
-			const color =
-				size > 100 * 1024
-					? 'red'
-					: size > 40 * 1024
-						? 'yellow'
-						: size > 20 * 1024
-							? 'cyan'
-							: 'green';
-			let sizeText = chalk[color](prettyBytes(size));
-			let deltaText = '';
-			if (delta && Math.abs(delta) > 1) {
-				deltaText = (delta > 0 ? '+' : '') + prettyBytes(delta);
-				if (delta > 1024) {
-					sizeText = chalk.bold(sizeText);
-					deltaText = chalk.red(deltaText);
-				}
-				else if (delta < -10) {
-					deltaText = chalk.green(deltaText);
-				}
-				sizeText += ` (${deltaText})`;
-			}
-			let text = msg + sizeText + '\n';
-			const item = {
-				name,
-				sizeBefore,
-				size,
-				sizeText,
-				delta,
-				deltaText,
-				msg,
-				color
-			};
-			items.push(item);
-			if (this.options.decorateItem) {
-				text = this.options.decorateItem(text, item) || text;
-			}
-			output += text;
-		}
-		if (this.options.decorateAfter) {
-			const opts = {
-				sizes: items,
-				raw: { sizesBefore, sizes: this.sizes },
-				output
-			};
-			const text = this.options.decorateAfter(opts);
-			if (text) {
-				output += '\n' + text.replace(/^\n/g, '');
-			}
-		}
-		await this.save(items);
-		return output;
-	}
-
-	async getSizes(cwd) {
-		const files = await glob(this.pattern, { cwd, ignore: this.exclude });
-
-		const sizes = await Promise.all(
-			files.map(file => gzipSize.file(path.join(cwd, file)).catch(() => null))
-		);
-
-		return toMap(files.map(filename => this.stripHash(filename)), sizes);
-	}
 }
-
 
 /**
  * @name Item
@@ -293,7 +144,6 @@ export default class SizePlugin {
  * @property {string} color The item's default CLI color
  * @public
  */
-
 
 /**
  * @name Data
