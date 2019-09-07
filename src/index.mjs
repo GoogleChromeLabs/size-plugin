@@ -15,7 +15,7 @@
  */
 
 import escapeRegExp from 'escape-string-regexp';
-import core from 'size-plugin-core';
+import SizePluginCore from 'size-plugin-core';
 
 const NAME = 'SizePlugin';
 
@@ -37,9 +37,8 @@ export default class SizePlugin {
 	constructor(options) {
 		const pluginOptions=options||{};
 		const coreOptions={ ...pluginOptions,stripHash: pluginOptions.stripHash||this.stripHash.bind(this) };
-		const { outputSizes, options: _options } = core(coreOptions);
-		this.options = _options;
-		this.outputSizes = outputSizes;
+		const core = new SizePluginCore(coreOptions);
+		this.core = core;
 	}
 
 	reverseTemplate(filename, template) {
@@ -98,7 +97,7 @@ export default class SizePlugin {
 
 	async apply(compiler) {
 		this.output = compiler.options.output;
-		this.options.mode = compiler.options.mode;
+		this.core.options.mode = compiler.options.mode;
 		const outputPath = compiler.options.output.path;
 
 		const afterEmit = (compilation, callback) => {
@@ -110,7 +109,7 @@ export default class SizePlugin {
 			}, {});
 			// assets => {'a.js':{source:'console.log(1)'}}
 
-			this.outputSizes(assets, outputPath)
+			this.core.execute(assets, outputPath)
 				.then(output => {
 					if (output) {
 						process.nextTick(() => {
