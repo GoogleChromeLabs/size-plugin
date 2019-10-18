@@ -67,7 +67,7 @@
   },
   "dependencies": {
     "escape-string-regexp": "^1.0.5",
-    "size-plugin-core": "^0.0.6"
+    "size-plugin-core": "^0.0.7"
   },
   "peerDependencies": {
     "webpack": "*"
