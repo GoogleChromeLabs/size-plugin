@@ -3,9 +3,6 @@
   "version": "0.0.5",
   "description": "store used by size-plugin",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 0"
-  },
   "author": "kuldeepkeshwar@gmail.com",
   "license": "MIT",
   "dependencies": {

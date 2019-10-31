@@ -3,6 +3,12 @@
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "build": "lerna run build",
+    "doc": "lerna run doc",
+    "prepare": "lerna run prepare",
+    "test": "lerna run test"
+  },
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-jest": "^23.6.0",
@@ -14,7 +20,7 @@
     "jest": "^23.6.0",
     "lerna": "^3.16.4",
     "microbundle": "^0.11.0",
-    "webpack": "^4.39.2"
+    "webpack": "^4.41.2"
   },
   "name": "size-plugin"
 }

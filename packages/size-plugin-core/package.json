@@ -4,8 +4,7 @@
   "description": "core module for size-plugin",
   "main": "index.js",
   "scripts": {
-    "doc": "documentation readme index.js -a public --section Options",
-    "test": "echo \"Error: no test specified\" && exit 0"
+    "doc": "documentation readme index.js -a public --section Options"
   },
   "dependencies": {
     "brotli-size": "^4.0.0",
