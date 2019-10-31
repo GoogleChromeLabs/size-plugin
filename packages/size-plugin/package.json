@@ -1,0 +1,63 @@
+{
+  "name": "size-plugin",
+  "version": "2.0.1",
+  "description": "Tracks your Webpack asset sizes over time.",
+  "main": "dist/size-plugin.js",
+  "module": "src/index.mjs",
+  "source": "src/index.mjs",
+  "scripts": {
+    "build": "microbundle -f cjs --target node --no-compress",
+    "doc": "documentation readme src/index.mjs -a public --section Options",
+    "prepare": "npm run -s build",
+    "test": "jest --coverage",
+    "release": "npm t && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "keywords": [
+    "webpack plugin",
+    "file size",
+    "gzip size",
+    "bundle size"
+  ],
+  "eslintConfig": {
+    "extends": "developit"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "moduleFileExtensions": [
+      "mjs",
+      "js",
+      "json"
+    ],
+    "transform": {
+      "^.+\\.m?js$": "babel-jest"
+    },
+    "coverageReporters": [
+      "text"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*"
+    ],
+    "watchPathIgnorePatterns": [
+      "node_modules",
+      "dist"
+    ]
+  },
+  "author": "Jason Miller <developit@google.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "escape-string-regexp": "^1.0.5",
+    "size-plugin-core": "^0.0.7"
+  },
+  "peerDependencies": {
+    "webpack": "*"
+  }
+}

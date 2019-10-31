@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`size-plugin should display the size of a multiple output files 1`] = `
+"
+        bundle.js ⏤  1.07 kB (+598 B)
+ 1.*****.chunk.js ⏤  102 B (+102 B)
+ 2.*****.chunk.js ⏤  137 B (+137 B)
+"
+`;
+
+exports[`size-plugin should display the size of a single bundle file 1`] = `
+"
+ bundle.js ⏤  472 B (+472 B)
+"
+`;
+
+exports[`size-plugin should respect output.filename / output.chunkFilename 1`] = `
+"
+ js-main.********************.js ⏤  1.12 kB (+1.12 kB)
+    js-1.********************.js ⏤  102 B (+102 B)
+    js-2.********************.js ⏤  137 B (+137 B)
+"
+`;
+
+exports[`size-plugin should show size deltas for subsequent builds 1`] = `
+"
+        bundle.js ⏤  7.23 kB (+6.16 kB)
+ 1.*****.chunk.js ⏤  102 B
+ 2.*****.chunk.js ⏤  303 B (+166 B)
+"
+`;

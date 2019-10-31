@@ -1,58 +1,14 @@
 {
-  "name": "size-plugin",
-  "version": "2.0.1",
-  "description": "Tracks your Webpack asset sizes over time.",
-  "main": "dist/size-plugin.js",
-  "module": "src/index.mjs",
-  "source": "src/index.mjs",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "microbundle -f cjs --target node --no-compress",
-    "doc": "documentation readme src/index.mjs -a public --section Options",
-    "prepare": "npm run -s build",
-    "test": "jest --coverage",
-    "release": "npm t && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
+    "build": "lerna run build",
+    "doc": "lerna run doc",
+    "prepare": "lerna run prepare",
+    "test": "lerna run test"
   },
-  "files": [
-    "src",
-    "dist"
-  ],
-  "keywords": [
-    "webpack plugin",
-    "file size",
-    "gzip size",
-    "bundle size"
-  ],
-  "eslintConfig": {
-    "extends": "developit"
-  },
-  "babel": {
-    "presets": [
-      "env"
-    ]
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "moduleFileExtensions": [
-      "mjs",
-      "js",
-      "json"
-    ],
-    "transform": {
-      "^.+\\.m?js$": "babel-jest"
-    },
-    "coverageReporters": [
-      "text"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*"
-    ],
-    "watchPathIgnorePatterns": [
-      "node_modules",
-      "dist"
-    ]
-  },
-  "author": "Jason Miller <developit@google.com>",
-  "license": "Apache-2.0",
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-jest": "^23.6.0",
@@ -62,21 +18,9 @@
     "eslint-config-developit": "^1.1.1",
     "fs-extra": "^7.0.1",
     "jest": "^23.6.0",
+    "lerna": "^3.16.4",
     "microbundle": "^0.11.0",
     "webpack": "^4.41.2"
   },
-  "dependencies": {
-    "axios": "^0.19.0",
-    "chalk": "^2.4.2",
-    "ci-env": "^1.9.0",
-    "escape-string-regexp": "^1.0.5",
-    "glob": "^7.1.4",
-    "gzip-size": "^5.1.1",
-    "minimatch": "^3.0.4",
-    "pretty-bytes": "^5.3.0",
-    "util.promisify": "^1.0.0"
-  },
-  "peerDependencies": {
-    "webpack": "*"
-  }
+  "name": "size-plugin"
 }
