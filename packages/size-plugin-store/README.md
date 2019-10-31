@@ -1,0 +1,1 @@
+# size-plugin-store

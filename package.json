@@ -1,10 +1,20 @@
 {
-    "private": true,
-    "workspaces":["packages/*"],
-    "devDependencies": {
-      "documentation": "^12.1.1",
-      "lerna": "^3.16.4"
-    },
-    "name": "size-plugin"
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.6.0",
+    "babel-preset-env": "^1.7.0",
+    "documentation": "^12.1.1",
+    "eslint": "^5.16.0",
+    "eslint-config-developit": "^1.1.1",
+    "fs-extra": "^7.0.1",
+    "jest": "^23.6.0",
+    "lerna": "^3.16.4",
+    "microbundle": "^0.11.0",
+    "webpack": "^4.39.2"
+  },
+  "name": "size-plugin"
 }
-  
