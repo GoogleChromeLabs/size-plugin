@@ -2,7 +2,7 @@
 
 exports[`size-plugin should display the size of a multiple output files 1`] = `
 "
-        bundle.js ⏤  [32m1.07 kB[39m (+598 B)
+        bundle.js ⏤  [32m1.07 kB[39m (+600 B)
  1.*****.chunk.js ⏤  [32m102 B[39m (+102 B)
  2.*****.chunk.js ⏤  [32m137 B[39m (+137 B)
 "
