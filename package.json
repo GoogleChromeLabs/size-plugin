@@ -2,11 +2,17 @@
   "name": "size-plugin",
   "version": "2.0.2",
   "description": "Tracks your Webpack asset sizes over time.",
-  "main": "dist/size-plugin.js",
-  "module": "src/index.mjs",
-  "source": "src/index.mjs",
+  "type": "module",
+  "main": "./dist/size-plugin.cjs",
+  "module": "./src/index.js",
+  "exports": {
+    "require": "./dist/size-plugin.cjs",
+    "default": "./src/index.js"
+  },
+  "types": "./dist/size-plugin.d.ts",
   "scripts": {
-    "build": "microbundle -f cjs --target node --no-compress",
+    "build": "microbundle -f cjs --target node --no-compress --no-sourcemap src/index.js",
+    "postbuild": "cd dist && mv index.d.ts size-plugin.d.ts && mv size-plugin.cjs.js size-plugin.cjs",
     "doc": "documentation readme src/index.mjs -a public --section Options",
     "prepare": "npm run -s build",
     "test": "jest --coverage --colors",
@@ -24,7 +30,11 @@
     "bundle size"
   ],
   "eslintConfig": {
-    "extends": "developit"
+    "extends": "developit",
+    "rules": {
+      "no-console": "off",
+      "camelcase": "off"
+    }
   },
   "babel": {
     "presets": [
