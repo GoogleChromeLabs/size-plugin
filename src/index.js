@@ -22,8 +22,8 @@ import gzipSize from 'gzip-size';
 import chalk from 'chalk';
 import prettyBytes from 'pretty-bytes';
 import escapeRegExp from 'escape-string-regexp';
-import { toMap, dedupe, toFileMap } from './util.mjs';
-import { publishSizes, publishDiff } from './publish-size.mjs';
+import { toMap, dedupe, toFileMap } from './util.js';
+import { publishSizes, publishDiff } from './publish-size.js';
 import fs from 'fs-extra';
 
 const glob = promisify(globPromise);
