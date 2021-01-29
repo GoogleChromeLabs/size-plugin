@@ -2,7 +2,7 @@
 
 exports[`size-plugin should display the size of a multiple output files 1`] = `
 "
-        bundle.js ⏤  [32m1.07 kB[39m (+598 B)
+        bundle.js ⏤  [1m[32m1.07 kB[39m[22m ([31m+1.07 kB[39m)
  1.*****.chunk.js ⏤  [32m102 B[39m (+102 B)
  2.*****.chunk.js ⏤  [32m137 B[39m (+137 B)
 "
@@ -27,5 +27,21 @@ exports[`size-plugin should show size deltas for subsequent builds 1`] = `
         bundle.js ⏤  [1m[32m7.23 kB[39m[22m ([31m+6.16 kB[39m)
  1.*****.chunk.js ⏤  [32m102 B[39m
  2.*****.chunk.js ⏤  [32m303 B[39m (+166 B)
+"
+`;
+
+exports[`size-plugin should support {compression:"brotli"} 1`] = `
+"
+        bundle.js ⏤  [32m922 B[39m (+922 B)
+ 1.*****.chunk.js ⏤  [32m75 B[39m (+75 B)
+ 2.*****.chunk.js ⏤  [32m108 B[39m (+108 B)
+"
+`;
+
+exports[`size-plugin should support {compression:"none"} 1`] = `
+"
+        bundle.js ⏤  [1m[32m2.19 kB[39m[22m ([31m+2.19 kB[39m)
+ 1.*****.chunk.js ⏤  [32m99 B[39m (+99 B)
+ 2.*****.chunk.js ⏤  [32m146 B[39m (+146 B)
 "
 `;

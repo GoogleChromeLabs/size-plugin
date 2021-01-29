@@ -29,7 +29,7 @@ async function clearDist () {
 	await fs.remove(path.resolve(process.cwd(), 'size-plugin.json'));
 }
 
-beforeAll(clearDist);
+beforeEach(clearDist);
 afterAll(clearDist);
 
 const consoleLog = jest.spyOn(console, 'log');
@@ -61,6 +61,9 @@ describe('size-plugin', () => {
 	});
 
 	it('should show size deltas for subsequent builds', async () => {
+		await compile('fixtures/splits/index.js', withSizePlugin);
+		consoleLog.mockReset();
+
 		const info = await compile('fixtures/splits/index-alt.js', withSizePlugin);
 		expect(info.assets).toHaveLength(3);
 
@@ -70,8 +73,6 @@ describe('size-plugin', () => {
 	});
 
 	it('should respect output.filename / output.chunkFilename', async () => {
-		await clearDist();
-
 		const info = await compile('fixtures/splits/index.js', config => {
 			withSizePlugin(config);
 			config.output.filename = 'js-[name].[contenthash].js';
@@ -83,6 +84,20 @@ describe('size-plugin', () => {
 
 		expect(consoleLog.mock.calls[0][0]).toMatch(/js-2\.\*{20}\.js/);
 
+		expect(consoleLog.mock.calls[0][0]).toMatchSnapshot();
+	});
+
+	it('should support {compression:"none"}', async () => {
+		await compile('fixtures/splits/index.js', config => {
+			config.plugins.push(new SizePlugin({ compression: 'none' }));
+		});
+		expect(consoleLog.mock.calls[0][0]).toMatchSnapshot();
+	});
+
+	it('should support {compression:"brotli"}', async () => {
+		await compile('fixtures/splits/index.js', config => {
+			config.plugins.push(new SizePlugin({ compression: 'brotli' }));
+		});
 		expect(consoleLog.mock.calls[0][0]).toMatchSnapshot();
 	});
 });
