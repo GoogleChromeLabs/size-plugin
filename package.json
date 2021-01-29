@@ -64,6 +64,7 @@
     "fs-extra": "^7.0.1",
     "jest": "^23.6.0",
     "microbundle": "^0.13.0",
+    "npm-merge-driver-install": "^1.1.1",
     "webpack": "^4.41.2"
   },
   "dependencies": {
