@@ -38,6 +38,7 @@ const NAME = 'SizePlugin';
  * @param {boolean} [options.publish] option to publish filesizes to size-plugin-store
  * @param {boolean} [options.writeFile] option to save filesizes to disk
  * @param {function} [options.stripHash] custom function to remove/normalize hashed filenames for comparison
+ * @param {string} [options.mode] custom Webpack "mode" - only use this to emulate "mode" in Webpack 3.
  * @param {(item:Item)=>string?} [options.decorateItem] custom function to decorate items
  * @param {(data:Data)=>string?} [options.decorateAfter] custom function to decorate all output
  * @public
@@ -155,7 +156,7 @@ export default class SizePlugin {
 		const outputPath = compiler.options.output.path;
 		this.output = compiler.options.output;
 		this.sizes = this.load(outputPath);
-		this.mode = compiler.options.mode;
+		this.mode = this.options.mode || compiler.options.mode;
 
 		const afterEmit = (compilation, callback) => {
 			this.outputSizes(compilation.assets)
