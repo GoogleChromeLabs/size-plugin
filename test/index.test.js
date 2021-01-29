@@ -32,12 +32,12 @@ async function clearDist () {
 beforeAll(clearDist);
 afterAll(clearDist);
 
-let consoleLog;
+const consoleLog = jest.spyOn(console, 'log');
 beforeEach(() => {
-	consoleLog = jest.spyOn(console, 'log');
+	consoleLog.mockReset();
 });
 
-afterEach(() => {
+afterAll(() => {
 	consoleLog.mockRestore();
 });
 
@@ -53,11 +53,11 @@ describe('size-plugin', () => {
 
 	it('should display the size of a multiple output files', async () => {
 		const info = await compile('fixtures/splits/index.js', withSizePlugin);
-	  expect(info.assets).toHaveLength(3);
+		expect(info.assets).toHaveLength(3);
 
-	  expect(consoleLog).toHaveBeenCalled();
+		expect(consoleLog).toHaveBeenCalled();
 
-	  expect(consoleLog.mock.calls[0][0]).toMatchSnapshot();
+		expect(consoleLog.mock.calls[0][0]).toMatchSnapshot();
 	});
 
 	it('should show size deltas for subsequent builds', async () => {
@@ -77,12 +77,12 @@ describe('size-plugin', () => {
 			config.output.filename = 'js-[name].[contenthash].js';
 			delete config.output.chunkFilename;
 		});
-	  expect(info.assets).toHaveLength(3);
+		expect(info.assets).toHaveLength(3);
 
 		expect(consoleLog).toHaveBeenCalled();
 
 		expect(consoleLog.mock.calls[0][0]).toMatch(/js-2\.\*{20}\.js/);
 
-	  expect(consoleLog.mock.calls[0][0]).toMatchSnapshot();
+		expect(consoleLog.mock.calls[0][0]).toMatchSnapshot();
 	});
 });

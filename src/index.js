@@ -152,32 +152,30 @@ export default class SizePlugin {
 		}
 		return this.getSizes(outputPath);
 	}
+
+	/** @param {import('webpack').Compiler} compiler */
 	async apply(compiler) {
 		const outputPath = compiler.options.output.path;
 		this.output = compiler.options.output;
 		this.sizes = this.load(outputPath);
 		this.mode = this.options.mode || compiler.options.mode;
 
-		const afterEmit = (compilation, callback) => {
-			this.outputSizes(compilation.assets)
+		const done = (stats, callback) => {
+			this.outputSizes(stats.compilation.assets)
 				.then(output => {
-					if (output) {
-						process.nextTick(() => {
-							console.log('\n' + output);
-						});
-					}
+					if (output) console.log('\n' + output);
 				})
 				.catch(console.error)
 				.then(callback);
 		};
 
 		// for webpack version > 4
-		if (compiler.hooks && compiler.hooks.emit) {
-			compiler.hooks.emit.tapAsync(NAME, afterEmit);
+		if (compiler.hooks && compiler.hooks.done) {
+			compiler.hooks.done.tapAsync(NAME, done);
 		}
 		else {
 			// for webpack version < 3
-			compiler.plugin('after-emit', afterEmit);
+			compiler.plugin('done', done);
 		}
 	}
 
