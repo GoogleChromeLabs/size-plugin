@@ -9,7 +9,7 @@
     "build": "microbundle -f cjs --target node --no-compress",
     "doc": "documentation readme src/index.mjs -a public --section Options",
     "prepare": "npm run -s build",
-    "test": "jest --coverage",
+    "test": "jest --coverage --colors",
     "release": "npm t && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
   },
   "repository": "googlechromelabs/size-plugin",
