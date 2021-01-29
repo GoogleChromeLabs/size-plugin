@@ -18,7 +18,7 @@ import path from 'path';
 import promisify from 'util.promisify';
 import globPromise from 'glob';
 import minimatch from 'minimatch';
-import gzipSize from 'gzip-size';
+import zlib from 'zlib';
 import chalk from 'chalk';
 import prettyBytes from 'pretty-bytes';
 import escapeRegExp from 'escape-string-regexp';
@@ -29,6 +29,15 @@ import fs from 'fs-extra';
 const glob = promisify(globPromise);
 const NAME = 'SizePlugin';
 
+const GZIP_OPTS = {
+	level: 9
+};
+const BROTLI_OPTS = {
+	params: {
+		[zlib.constants.BROTLI_PARAM_QUALITY]: zlib.constants.BROTLI_MAX_QUALITY
+	}
+};
+
 /**
  * `new SizePlugin(options)`
  * @param {Object} options
@@ -38,6 +47,7 @@ const NAME = 'SizePlugin';
  * @param {boolean} [options.publish] option to publish filesizes to size-plugin-store
  * @param {boolean} [options.writeFile] option to save filesizes to disk
  * @param {function} [options.stripHash] custom function to remove/normalize hashed filenames for comparison
+ * @param {'none' | 'gzip' | 'brotli'} [options.compression = 'gzip'] change the compression algorithm used for calculated sizes
  * @param {string} [options.mode] custom Webpack "mode" - only use this to emulate "mode" in Webpack 3.
  * @param {(item:Item)=>string?} [options.decorateItem] custom function to decorate items
  * @param {(data:Data)=>string?} [options.decorateAfter] custom function to decorate all output
@@ -48,6 +58,7 @@ export default class SizePlugin {
 		this.options = options || {};
 		this.pattern = this.options.pattern || '**/*.{mjs,js,css,html}';
 		this.exclude = this.options.exclude;
+		this.compression = this.options.compression || 'gzip';
 		this.options.filename = this.options.filename || 'size-plugin.json';
 		this.options.writeFile = this.options.writeFile !== false;
 		this.filename = path.join(process.cwd(), this.options.filename);
@@ -191,7 +202,7 @@ export default class SizePlugin {
 			file => isMatched(file) && !isExcluded(file)
 		);
 		const sizes = await Promise.all(
-			assetNames.map(name => gzipSize(assets[name].source()))
+			assetNames.map(name => this.getCompressedSize(assets[name].source()))
 		);
 
 		// map of de-hashed filenames to their final size
@@ -271,10 +282,28 @@ export default class SizePlugin {
 		const files = await glob(this.pattern, { cwd, ignore: this.exclude });
 
 		const sizes = await Promise.all(
-			files.map(file => gzipSize.file(path.join(cwd, file)).catch(() => null))
+			files.map(async file => {
+				const source = await fs.promises.readFile(path.join(cwd, file)).catch(() => null);
+				if (source == null) return null;
+				return this.getCompressedSize(source);
+			})
 		);
 
 		return toMap(files.map(filename => this.stripHash(filename)), sizes);
+	}
+
+	async getCompressedSize(source) {
+		let compressed = source;
+		if (this.compression === 'gzip') {
+			const gz = promisify(zlib.gzip);
+			compressed = await gz(source, GZIP_OPTS);
+		}
+		else if (this.compression === 'brotli') {
+			if (!zlib.brotliCompress) throw Error('Brotli not supported in this Node version.');
+			const br = promisify(zlib.brotliCompress);
+			compressed = await br(source, BROTLI_OPTS);
+		}
+		return Buffer.byteLength(compressed);
 	}
 }
 
