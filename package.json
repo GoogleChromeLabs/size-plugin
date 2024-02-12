@@ -60,7 +60,10 @@
     "watchPathIgnorePatterns": [
       "node_modules",
       "dist"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^axios$": "axios/dist/node/axios.cjs"
+    }
   },
   "author": "Jason Miller <developit@google.com>",
   "license": "Apache-2.0",
@@ -78,7 +81,7 @@
     "webpack": "^4.41.2"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^1.6.7",
     "chalk": "^2.4.2",
     "ci-env": "^1.9.0",
     "escape-string-regexp": "^1.0.5",
