@@ -87,7 +87,7 @@ export default class SizePlugin {
 			return out;
 		}
 		const reg = template.replace(
-			/(^|.+?)(?:\[([a-z]+)(?::(\d))?\]|$)/g,
+			/(^|.+?)(?:\[([a-z]+)(?::(\d+))?\]|$)/g,
 			(s, before, type, size) => {
 				let out = '';
 				if (before) {
