@@ -100,4 +100,40 @@ describe('size-plugin', () => {
 		});
 		expect(consoleLog.mock.calls[0][0]).toMatchSnapshot();
 	});
+	describe('explicit hash lengths', () => {
+		for (const type of ['hash', 'chunkhash', 'contenthash']) {
+			for (const length of [5, 12, 16, 32]) {
+				it(`should strip ${type} with length ${length}`, () => {
+					const plugin = new SizePlugin();
+					plugin.output = { hashDigestLength: 20 };
+					const hash = 'a'.repeat(length);
+					expect(plugin.reverseTemplate(
+						`js-main.${hash}.js`, `js-[name].[${type}:${length}].js`
+					)).toBe(`js-main.${'*'.repeat(length)}.js`);
+				});
+			}
+		}
+
+		it('should compare the same assets across builds with multi-digit hash lengths', async () => {
+			const builds = [];
+			const configure = config => {
+				config.output.filename = '[name].[contenthash:12].js';
+				config.output.chunkFilename = '[name].[chunkhash:16].js';
+				config.plugins.push(new SizePlugin({
+					compression: 'none',
+					save: stats => builds.push(stats)
+				}));
+			};
+			await compile('fixtures/splits/index.js', configure);
+			await compile('fixtures/splits/index-alt.js', configure);
+			expect(builds).toHaveLength(2);
+			expect(builds[1].files).toHaveLength(3);
+			for (const file of builds[1].files) {
+				expect(file.filename).toMatch(/^(main\.\*{12}|[12]\.\*{16})\.js$/);
+				expect(file.previous).toBeGreaterThan(0);
+				expect(file.size).toBeGreaterThan(0);
+			}
+		});
+	});
+
 });
